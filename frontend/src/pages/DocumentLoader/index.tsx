@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   Upload,
@@ -12,6 +12,13 @@ import {
   Tag,
   Typography,
   Divider,
+  Row,
+  Col,
+  message,
+  Spin,
+  InputNumber,
+  Modal,
+  Input,
 } from 'antd';
 import {
   UploadOutlined,
@@ -21,40 +28,92 @@ import {
   FilePdfOutlined,
   FileExcelOutlined,
   FileWordOutlined,
+  SearchOutlined,
+  InboxOutlined,
+  PlusOutlined,
 } from '@ant-design/icons';
 import styled from '@emotion/styled';
-import type { UploadFile } from 'antd/es/upload/interface';
+import type { UploadFile, TabsProps, UploadChangeParam } from 'antd';
+import axios from 'axios';
 
 const { Title } = Typography;
-const { TabPane } = Tabs;
+const { Dragger } = Upload;
+const { Search } = Input;
 
 const Container = styled.div`
   padding: 24px;
+  height: 100%;
 `;
 
 const StyledCard = styled(Card)`
-  margin-bottom: 24px;
+  height: 100%;
+  .ant-card-body {
+    height: calc(100% - 57px);
+    overflow-y: auto;
+  }
+`;
+
+const FileListContainer = styled.div`
+  margin-top: 16px;
+  height: calc(100% - 380px);
+  overflow-y: auto;
+`;
+
+const UploadArea = styled.div`
+  margin-bottom: 16px;
+  .ant-upload-drag {
+    background: #fafafa;
+    border: 1px dashed #d9d9d9;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: border-color 0.3s;
+    &:hover {
+      border-color: #1890ff;
+    }
+  }
+`;
+
+const UploadButton = styled(Button)`
+  width: 100%;
+  margin-bottom: 16px;
 `;
 
 const FileList = styled(List)`
-  margin-top: 16px;
+  margin-top: 8px;
+  .ant-list-item {
+    padding: 8px 0;
+  }
 `;
 
 const PreviewContainer = styled.div`
-  margin-top: 16px;
-  padding: 16px;
+  margin-top: 8px;
+  padding: 12px;
   border: 1px solid #f0f0f0;
   border-radius: 4px;
-  max-height: 400px;
+  max-height: 500px;
   overflow: auto;
+`;
+
+const CompactForm = styled(Form)`
+  .ant-form-item {
+    margin-bottom: 8px;
+  }
+  .ant-form-item-label {
+    padding-bottom: 4px;
+  }
 `;
 
 const DocumentLoader: React.FC = () => {
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [form] = Form.useForm();
+  const [processing, setProcessing] = useState(false);
+  const [currentDocument, setCurrentDocument] = useState<any>(null);
+  const [serverFiles, setServerFiles] = useState<any[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
-  const handleFileChange = ({ fileList: newFileList }: { fileList: UploadFile[] }) => {
-    setFileList(newFileList);
+  const handleFileChange = (info: UploadChangeParam<UploadFile>) => {
+    setFileList(info.fileList);
   };
 
   const getFileIcon = (file: UploadFile) => {
@@ -73,86 +132,254 @@ const DocumentLoader: React.FC = () => {
     }
   };
 
+  const handleProcess = async () => {
+    if (fileList.length === 0) {
+      message.error('请先上传文件');
+      return;
+    }
+
+    try {
+      setProcessing(true);
+      const values = await form.validateFields();
+
+      // 构建处理配置
+      const config = {
+        loader: values.loader,
+        enable_table_recognition: values.enable_table_recognition || false,
+        enable_ocr: values.enable_ocr || false,
+        enable_image_analysis: values.enable_image_analysis || false,
+        remove_headers_footers: values.remove_headers_footers || false
+      };
+
+      // 调用处理接口
+      const response = await axios.post(`/api/v1/documents/${currentDocument.id}/process`, config);
+
+      // 更新文档状态
+      setCurrentDocument(response.data);
+      message.success('文档加载成功');
+    } catch (error: any) {
+      message.error(`加载失败: ${error.response?.data?.detail || error.message}`);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  // 获取服务器文件列表
+  const fetchServerFiles = async (searchText?: string) => {
+    try {
+      setSearchLoading(true);
+      const response = await axios.get('/api/v1/documents', {
+        params: {
+          search: searchText,
+          status: 'completed' // 只获取处理完成的文件
+        }
+      });
+      setServerFiles(response.data);
+    } catch (error: any) {
+      message.error(`获取文件列表失败: ${error.message}`);
+      setServerFiles([]); // 清空列表
+    } finally {
+      setSearchLoading(false);
+      setInitialLoading(false);
+    }
+  };
+
+  // 初始加载文件列表
+  useEffect(() => {
+    fetchServerFiles();
+  }, []);
+
+  // 处理文件搜索
+  const handleSearch = (value: string) => {
+    fetchServerFiles(value);
+  };
+
+  const handleUpload = async (file: UploadFile) => {
+    try {
+      setProcessing(true);
+      const formData = new FormData();
+      formData.append('file', file as any);
+
+      const response = await axios.post('/api/v1/documents/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.data) {
+        setCurrentDocument(response.data);
+        message.success('文件上传成功');
+        fetchServerFiles();
+      }
+      return response.data;
+    } catch (error: any) {
+      message.error(`上传失败: ${error.response?.data?.detail || error.message}`);
+      return null;
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleSelectFile = async (file: any) => {
+    try {
+      setProcessing(true);
+      const response = await axios.get(`/api/v1/documents/${file.id}`);
+      setCurrentDocument(response.data);
+      setFileList([{
+        uid: file.id.toString(),
+        name: file.filename,
+        status: 'done',
+        url: `/api/v1/documents/${file.id}/download`
+      }]);
+      message.success('文件加载成功');
+    } catch (error: any) {
+      message.error(`加载文件失败: ${error.message}`);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   return (
     <Container>
-      <Title level={2}>文档加载设置</Title>
-
-      <StyledCard title="文件选择">
-        <Upload.Dragger
-          multiple
-          fileList={fileList}
-          onChange={handleFileChange}
-          beforeUpload={() => false}
-        >
-          <p className="ant-upload-drag-icon">
-            <UploadOutlined />
-          </p>
-          <p className="ant-upload-text">点击或拖拽文件到此区域上传</p>
-          <p className="ant-upload-hint">
-            支持 PDF、DOCX、CSV、MD、HTML、TXT 等格式
-          </p>
-        </Upload.Dragger>
-
-        <FileList
-          dataSource={fileList}
-          renderItem={(file) => (
-            <List.Item
-              actions={[
-                <Button type="text" icon={<EyeOutlined />}>预览</Button>,
-                <Button type="text" danger icon={<DeleteOutlined />}>删除</Button>,
-              ]}
-            >
-              <List.Item.Meta
-                avatar={getFileIcon(file)}
-                title={file.name}
-                description={`${(file.size! / 1024).toFixed(2)} KB`}
+      <Row gutter={24} style={{ height: '100%' }}>
+        {/* 左侧：文件列表和上传 */}
+        <Col span={12}>
+          <StyledCard title="文档列表">
+            <div style={{ marginBottom: 16 }}>
+              <Search
+                placeholder="搜索文件名"
+                onSearch={handleSearch}
+                loading={searchLoading}
+                enterButton
               />
-            </List.Item>
-          )}
-        />
-      </StyledCard>
+            </div>
 
-      <StyledCard title="解析工具配置">
-        <Form form={form} layout="vertical">
-          <Form.Item label="选择解析工具" name="parser">
-            <Select mode="multiple" placeholder="请选择解析工具">
-              <Select.Option value="langchain">LangChain</Select.Option>
-              <Select.Option value="llamaindex">LlamaIndex</Select.Option>
-              <Select.Option value="unstructured">Unstructured.io</Select.Option>
-              <Select.Option value="custom">自定义解析器</Select.Option>
-            </Select>
-          </Form.Item>
+            <UploadArea>
+              <Dragger
+                fileList={fileList}
+                onChange={handleFileChange}
+                beforeUpload={handleUpload}
+                maxCount={1}
+                accept=".pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.md,.html"
+                showUploadList={{
+                  showPreviewIcon: true,
+                  showRemoveIcon: true,
+                  showDownloadIcon: true,
+                }}
+              >
+                <p className="ant-upload-drag-icon">
+                  <InboxOutlined />
+                </p>
+                <p className="ant-upload-text">点击或拖拽文件到此区域上传</p>
+                <p className="ant-upload-hint">
+                  支持 PDF、DOCX、CSV、MD、HTML、TXT 等格式
+                </p>
+              </Dragger>
+            </UploadArea>
 
-          <Form.Item label="解析选项">
-            <Space direction="vertical">
-              <Checkbox>启用表格识别</Checkbox>
-              <Checkbox>启用图片OCR</Checkbox>
-              <Checkbox>启用图文联合解析</Checkbox>
-              <Checkbox>去除页眉页脚</Checkbox>
-            </Space>
-          </Form.Item>
-        </Form>
-      </StyledCard>
+            <FileListContainer>
+              {initialLoading ? (
+                <div style={{ textAlign: 'center', padding: '20px' }}>
+                  <Spin tip="加载文件列表..." />
+                </div>
+              ) : serverFiles.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '20px', color: '#999' }}>
+                  {searchLoading ? '搜索中...' : '暂无文件'}
+                </div>
+              ) : (
+                <List
+                  loading={searchLoading}
+                  itemLayout="horizontal"
+                  dataSource={serverFiles}
+                  renderItem={(file) => (
+                    <List.Item
+                      actions={[
+                        <Button
+                          type="link"
+                          onClick={() => handleSelectFile(file)}
+                          disabled={processing}
+                        >
+                          选择
+                        </Button>
+                      ]}
+                    >
+                      <List.Item.Meta
+                        avatar={getFileIcon({ name: file.filename } as UploadFile)}
+                        title={file.filename}
+                        description={
+                          <div>
+                            <div>上传时间: {new Date(file.upload_time).toLocaleString()}</div>
+                            <div>状态: {
+                              file.status === 'completed' ? '已完成' :
+                              file.status === 'processing' ? '处理中' :
+                              file.status === 'failed' ? '处理失败' : '待处理'
+                            }</div>
+                            {file.error_message && (
+                              <div style={{ color: '#ff4d4f' }}>
+                                错误: {file.error_message}
+                              </div>
+                            )}
+                          </div>
+                        }
+                      />
+                    </List.Item>
+                  )}
+                />
+              )}
+            </FileListContainer>
+          </StyledCard>
+        </Col>
 
-      <StyledCard title="解析预览">
-        <Tabs defaultActiveKey="1">
-          <TabPane tab="原始文本" key="1">
-            <PreviewContainer>
-              {/* 这里将显示解析后的文本内容 */}
-            </PreviewContainer>
-          </TabPane>
-          <TabPane tab="结构化数据" key="2">
-            <PreviewContainer>
-              {/* 这里将显示结构化数据 */}
-            </PreviewContainer>
-          </TabPane>
-          <TabPane tab="对比视图" key="3">
-            <PreviewContainer>
-              {/* 这里将显示不同解析工具的对比结果 */}
-            </PreviewContainer>
-          </TabPane>
-        </Tabs>
-      </StyledCard>
+        {/* 右侧：加载工具配置 */}
+        <Col span={12}>
+          <StyledCard title="加载工具配置">
+            <Form
+              form={form}
+              layout="vertical"
+            >
+              <Form.Item
+                name="loader"
+                label="加载工具"
+                rules={[{ required: true, message: '请选择加载工具' }]}
+              >
+                <Select>
+                  <Select.Option value="langchain">LangChain</Select.Option>
+                  <Select.Option value="llamaindex">LlamaIndex</Select.Option>
+                  <Select.Option value="unstructured">Unstructured</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item name="enable_table_recognition" valuePropName="checked">
+                <Checkbox>启用表格识别</Checkbox>
+              </Form.Item>
+
+              <Form.Item name="enable_ocr" valuePropName="checked">
+                <Checkbox>启用OCR</Checkbox>
+              </Form.Item>
+
+              <Form.Item name="enable_image_analysis" valuePropName="checked">
+                <Checkbox>启用图像分析</Checkbox>
+              </Form.Item>
+
+              <Form.Item name="remove_headers_footers" valuePropName="checked">
+                <Checkbox>移除页眉页脚</Checkbox>
+              </Form.Item>
+
+              <Form.Item>
+                <Button
+                  type="primary"
+                  onClick={handleProcess}
+                  loading={processing}
+                  disabled={!currentDocument}
+                  block
+                >
+                  开始加载
+                </Button>
+              </Form.Item>
+            </Form>
+          </StyledCard>
+        </Col>
+      </Row>
     </Container>
   );
 };
