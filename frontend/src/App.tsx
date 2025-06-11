@@ -1,36 +1,28 @@
 import React from 'react';
-import { RouterProvider, createBrowserRouter, Navigate } from 'react-router-dom';
-import MainLayout from './layouts/MainLayout';
-import DocumentLoader from './pages/DocumentLoader';
-import DocumentSplitter from './pages/DocumentSplitter';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { ConfigProvider } from 'antd';
+import zhCN from 'antd/locale/zh_CN';
+import { store } from './store';
+import { routes } from './routes';
 
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <MainLayout />,
-    children: [
-      {
-        index: true,
-        element: <Navigate to="/document-loader" replace />
-      },
-      {
-        path: 'document-loader',
-        element: <DocumentLoader />
-      },
-      {
-        path: 'document-splitter',
-        element: <DocumentSplitter />
-      },
-      {
-        path: '*',
-        element: <Navigate to="/document-loader" replace />
-      }
-    ]
-  }
-]);
+const router = createBrowserRouter(routes);
 
 const App: React.FC = () => {
-  return <RouterProvider router={router} />;
+  return (
+    <Provider store={store}>
+      <ConfigProvider
+        locale={zhCN}
+        theme={{
+          token: {
+            colorPrimary: '#1890ff',
+          },
+        }}
+      >
+        <RouterProvider router={router} />
+      </ConfigProvider>
+    </Provider>
+  );
 };
 
 export default App;

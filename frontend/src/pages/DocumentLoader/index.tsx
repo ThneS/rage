@@ -3,40 +3,28 @@ import {
   Card,
   Upload,
   Button,
-  Space,
   Checkbox,
   Form,
   Select,
-  Tabs,
   List,
-  Tag,
-  Typography,
-  Divider,
   Row,
   Col,
   message,
   Spin,
-  InputNumber,
-  Modal,
   Input,
 } from 'antd';
 import {
-  UploadOutlined,
-  DeleteOutlined,
-  EyeOutlined,
   FileTextOutlined,
   FilePdfOutlined,
   FileExcelOutlined,
   FileWordOutlined,
-  SearchOutlined,
   InboxOutlined,
-  PlusOutlined,
 } from '@ant-design/icons';
 import styled from '@emotion/styled';
-import type { UploadFile, TabsProps, UploadChangeParam } from 'antd';
+import type { UploadFile } from 'antd';
+import type { UploadChangeParam } from 'antd/es/upload';
 import axios from 'axios';
 
-const { Title } = Typography;
 const { Dragger } = Upload;
 const { Search } = Input;
 
@@ -70,36 +58,6 @@ const UploadArea = styled.div`
     &:hover {
       border-color: #1890ff;
     }
-  }
-`;
-
-const UploadButton = styled(Button)`
-  width: 100%;
-  margin-bottom: 16px;
-`;
-
-const FileList = styled(List)`
-  margin-top: 8px;
-  .ant-list-item {
-    padding: 8px 0;
-  }
-`;
-
-const PreviewContainer = styled.div`
-  margin-top: 8px;
-  padding: 12px;
-  border: 1px solid #f0f0f0;
-  border-radius: 4px;
-  max-height: 500px;
-  overflow: auto;
-`;
-
-const CompactForm = styled(Form)`
-  .ant-form-item {
-    margin-bottom: 8px;
-  }
-  .ant-form-item-label {
-    padding-bottom: 4px;
   }
 `;
 

@@ -1,0 +1,84 @@
+import { createSlice } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
+import type { AppThunk } from '../types';
+import { documentService } from '../../services/documentService';
+import type { Document } from '../../types/document';
+import type { AppDispatch } from '../types';
+
+interface DocumentState {
+  documents: Document[];
+  currentDocument: Document | null;
+  loading: boolean;
+  error: string | null;
+}
+
+const initialState: DocumentState = {
+  documents: [],
+  currentDocument: null,
+  loading: false,
+  error: null,
+};
+
+const documentSlice = createSlice({
+  name: 'document',
+  initialState,
+  reducers: {
+    setDocuments: (state, action: PayloadAction<Document[]>) => {
+      state.documents = action.payload;
+      state.error = null;
+    },
+    setCurrentDocument: (state, action: PayloadAction<Document | null>) => {
+      state.currentDocument = action.payload;
+      state.error = null;
+    },
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
+    },
+    setError: (state, action: PayloadAction<string | null>) => {
+      state.error = action.payload;
+    },
+  },
+});
+
+export const { setDocuments, setCurrentDocument, setLoading, setError } = documentSlice.actions;
+
+// Thunks
+export const fetchDocuments = (): AppThunk => async (dispatch: AppDispatch) => {
+  try {
+    dispatch(setLoading(true));
+    const documents = await documentService.getDocuments();
+    dispatch(setDocuments(documents));
+  } catch (error) {
+    dispatch(setError(error instanceof Error ? error.message : '获取文档列表失败'));
+  } finally {
+    dispatch(setLoading(false));
+  }
+};
+
+export const uploadDocument = (file: File): AppThunk => async (dispatch: AppDispatch) => {
+  try {
+    dispatch(setLoading(true));
+    const document = await documentService.uploadDocument(file);
+    dispatch(setCurrentDocument(document));
+    dispatch(fetchDocuments()); // 刷新文档列表
+  } catch (error) {
+    dispatch(setError(error instanceof Error ? error.message : '上传文档失败'));
+  } finally {
+    dispatch(setLoading(false));
+  }
+};
+
+export const processDocument = (documentId: number, config: any): AppThunk => async (dispatch: AppDispatch) => {
+  try {
+    dispatch(setLoading(true));
+    const document = await documentService.processDocument(documentId, config);
+    dispatch(setCurrentDocument(document));
+    dispatch(fetchDocuments()); // 刷新文档列表
+  } catch (error) {
+    dispatch(setError(error instanceof Error ? error.message : '处理文档失败'));
+  } finally {
+    dispatch(setLoading(false));
+  }
+};
+
+export default documentSlice.reducer;
