@@ -18,7 +18,7 @@ import {
 import styled from '@emotion/styled';
 import type { UploadFile } from 'antd';
 import type { UploadChangeParam, RcFile } from 'antd/es/upload';
-import { DocumentService } from '@/services/documentService';
+import { documentService } from '@/services/documentService';
 import type { Document } from '@/types/document';
 
 const { Dragger } = Upload;
@@ -70,7 +70,7 @@ const DocumentList: React.FC<DocumentListProps> = ({ onSelectDocument, processin
 
   const handleUpload = async (file: RcFile) => {
     try {
-      const uploadedDoc = await DocumentService.uploadDocument(file);
+      const uploadedDoc = await documentService.uploadDocument(file);
       if (uploadedDoc) {
         onSelectDocument(uploadedDoc);
         message.success('文件上传成功');
@@ -105,7 +105,7 @@ const DocumentList: React.FC<DocumentListProps> = ({ onSelectDocument, processin
   const fetchServerFiles = async (searchText?: string) => {
     try {
       setSearchLoading(true);
-      const files = await DocumentService.getDocuments({
+      const files = await documentService.getDocuments({
         search: searchText,
         status: 'completed' // 只获取处理完成的文件
       });
@@ -125,19 +125,29 @@ const DocumentList: React.FC<DocumentListProps> = ({ onSelectDocument, processin
   }, []);
 
   // 处理文件搜索
-  const handleSearch = (value: string) => {
-    fetchServerFiles(value);
+  const handleSearch = async (value: string) => {
+    try {
+      setSearchLoading(true);
+      const files = await documentService.getDocuments({ search: value });
+      setServerFiles(files);
+    } catch (error: any) {
+      message.error(`获取文件列表失败: ${error.message}`);
+      setServerFiles([]); // 清空列表
+    } finally {
+      setSearchLoading(false);
+      setInitialLoading(false);
+    }
   };
 
   const handleSelectFile = async (file: Document) => {
     try {
-      const document = await DocumentService.getDocument(file.id);
+      const document = await documentService.getDocument(file.id);
       onSelectDocument(document);
       setFileList([{
         uid: file.id.toString(),
         name: file.filename,
         status: 'done',
-        url: DocumentService.getDownloadUrl(file.id)
+        url: documentService.getDownloadUrl(file.id)
       }]);
       message.success('文件加载成功');
     } catch (error: any) {
