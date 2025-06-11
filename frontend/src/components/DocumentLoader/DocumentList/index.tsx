@@ -15,7 +15,6 @@ import {
   FileWordOutlined,
   InboxOutlined,
 } from '@ant-design/icons';
-import styled from '@emotion/styled';
 import type { UploadFile } from 'antd';
 import type { UploadChangeParam, RcFile } from 'antd/es/upload';
 import { documentService } from '@/services/documentService';
@@ -23,34 +22,6 @@ import type { Document } from '@/types/document';
 
 const { Dragger } = Upload;
 const { Search } = Input;
-
-const StyledCard = styled(Card)`
-  height: 100%;
-  .ant-card-body {
-    height: calc(100% - 57px);
-    overflow-y: auto;
-  }
-`;
-
-const FileListContainer = styled.div`
-  margin-top: 16px;
-  height: calc(100% - 380px);
-  overflow-y: auto;
-`;
-
-const UploadArea = styled.div`
-  margin-bottom: 16px;
-  .ant-upload-drag {
-    background: #fafafa;
-    border: 1px dashed #d9d9d9;
-    border-radius: 2px;
-    cursor: pointer;
-    transition: border-color 0.3s;
-    &:hover {
-      border-color: #1890ff;
-    }
-  }
-`;
 
 interface DocumentListProps {
   onSelectDocument: (document: Document) => void;
@@ -156,17 +127,22 @@ const DocumentList: React.FC<DocumentListProps> = ({ onSelectDocument, processin
   };
 
   return (
-    <StyledCard title="文档列表">
-      <div style={{ marginBottom: 16 }}>
+    <Card
+      title="文档列表"
+      className="h-full flex flex-col"
+      bodyStyle={{ height: 'calc(100% - 57px)', overflowY: 'auto' }}
+    >
+      <div className="mb-4">
         <Search
           placeholder="搜索文件名"
           onSearch={handleSearch}
           loading={searchLoading}
           enterButton
+          className="w-full"
         />
       </div>
 
-      <UploadArea>
+      <div className="mb-4">
         <Dragger
           fileList={fileList}
           onChange={handleFileChange}
@@ -178,28 +154,31 @@ const DocumentList: React.FC<DocumentListProps> = ({ onSelectDocument, processin
             showRemoveIcon: true,
             showDownloadIcon: true,
           }}
+          className="bg-gray-50 border border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-colors duration-300"
         >
           <p className="ant-upload-drag-icon">
-            <InboxOutlined />
+            <InboxOutlined className="text-4xl text-blue-500" />
           </p>
-          <p className="ant-upload-text">点击或拖拽文件到此区域上传</p>
-          <p className="ant-upload-hint">
+          <p className="ant-upload-text text-base font-medium">
+            点击或拖拽文件到此区域上传
+          </p>
+          <p className="ant-upload-hint text-sm text-gray-500">
             支持 PDF、DOCX、CSV、MD、HTML、TXT 等格式
           </p>
         </Dragger>
-      </UploadArea>
+      </div>
 
-      <FileListContainer>
+      <div className="flex-1 overflow-y-auto">
         {initialLoading ? (
-          <div style={{ textAlign: 'center', padding: '20px' }}>
+          <div className="flex items-center justify-center p-5">
             <Spin>
-              <div style={{ padding: '50px', background: 'rgba(0, 0, 0, 0.05)' }}>
+              <div className="p-[50px] bg-gray-50 rounded-lg">
                 加载文件列表...
               </div>
             </Spin>
           </div>
         ) : serverFiles.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '20px', color: '#999' }}>
+          <div className="flex items-center justify-center p-5 text-gray-500">
             {searchLoading ? '搜索中...' : '暂无文件'}
           </div>
         ) : (
@@ -207,13 +186,16 @@ const DocumentList: React.FC<DocumentListProps> = ({ onSelectDocument, processin
             loading={searchLoading}
             itemLayout="horizontal"
             dataSource={serverFiles}
+            className="space-y-2"
             renderItem={(file) => (
               <List.Item
+                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
                 actions={[
                   <Button
                     type="link"
                     onClick={() => handleSelectFile(file)}
                     disabled={processing}
+                    className="text-blue-500 hover:text-blue-600"
                   >
                     选择
                   </Button>
@@ -221,17 +203,27 @@ const DocumentList: React.FC<DocumentListProps> = ({ onSelectDocument, processin
               >
                 <List.Item.Meta
                   avatar={getFileIcon(file)}
-                  title={file.filename}
+                  title={
+                    <span className="text-base font-medium">
+                      {file.filename}
+                    </span>
+                  }
                   description={
-                    <div>
+                    <div className="space-y-1 text-sm text-gray-600">
                       <div>上传时间: {new Date(file.upload_time).toLocaleString()}</div>
                       <div>状态: {
-                        file.status === 'completed' ? '已完成' :
-                        file.status === 'processing' ? '处理中' :
-                        file.status === 'failed' ? '处理失败' : '待处理'
+                        file.status === 'completed' ? (
+                          <span className="text-green-500">已完成</span>
+                        ) : file.status === 'processing' ? (
+                          <span className="text-blue-500">处理中</span>
+                        ) : file.status === 'failed' ? (
+                          <span className="text-red-500">处理失败</span>
+                        ) : (
+                          <span className="text-gray-500">待处理</span>
+                        )
                       }</div>
                       {file.error_message && (
-                        <div style={{ color: '#ff4d4f' }}>
+                        <div className="text-red-500">
                           错误: {file.error_message}
                         </div>
                       )}
@@ -242,8 +234,8 @@ const DocumentList: React.FC<DocumentListProps> = ({ onSelectDocument, processin
             )}
           />
         )}
-      </FileListContainer>
-    </StyledCard>
+      </div>
+    </Card>
   );
 };
 

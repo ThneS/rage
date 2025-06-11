@@ -1,7 +1,6 @@
-import axios from 'axios';
 import type { Document } from '@/types/document';
 import { API_DOCUMENTS_URL } from '@/constants/api';
-import { get, del, upload } from '../utils/request';
+import { get, del, upload, post } from '../utils/request';
 
 export class DocumentService {
   async getDocuments(params?: { search?: string; status?: string }): Promise<Document[]> {
@@ -22,6 +21,18 @@ export class DocumentService {
 
   getDownloadUrl(id: number): string {
     return `${API_DOCUMENTS_URL}/${id}/download`;
+  }
+
+  async processDocument(
+    id: number,
+    config: {
+      prompt: string;
+      model: string;
+      temperature: number;
+      maxTokens: number;
+    }
+  ): Promise<Document> {
+    return post<Document>(`${API_DOCUMENTS_URL}/${id}/process`, config);
   }
 }
 

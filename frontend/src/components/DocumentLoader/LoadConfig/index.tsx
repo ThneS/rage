@@ -1,119 +1,145 @@
 import React from 'react';
-import { Card, Form, Select, Checkbox, Button, App } from 'antd';
-import styled from '@emotion/styled';
+import {
+  Card,
+  Form,
+  Input,
+  Button,
+  Select,
+  Space,
+  App,
+} from 'antd';
 import type { Document } from '@/types/document';
-import { DocumentService } from '@/services/documentService';
 
-const StyledCard = styled(Card)`
-  height: 100%;
-  .ant-card-body {
-    height: calc(100% - 57px);
-    overflow-y: auto;
-  }
-`;
+const { Option } = Select;
 
 interface LoadConfigProps {
-  currentDocument: Document | null;
-  onDocumentUpdate: (document: Document) => void;
+  selectedDocument: Document | null;
+  onProcess: (config: {
+    prompt: string;
+    model: string;
+    temperature: number;
+    maxTokens: number;
+  }) => void;
+  processing: boolean;
 }
 
-interface ProcessConfig {
-  loader: string;
-  enable_table_recognition: boolean;
-  enable_ocr: boolean;
-  enable_image_analysis: boolean;
-  remove_headers_footers: boolean;
-}
-
-const LoadConfig: React.FC<LoadConfigProps> = ({ currentDocument, onDocumentUpdate }) => {
+const LoadConfig: React.FC<LoadConfigProps> = ({
+  selectedDocument,
+  onProcess,
+  processing,
+}) => {
   const [form] = Form.useForm();
-  const [processing, setProcessing] = React.useState(false);
   const { message } = App.useApp();
 
-  const handleProcess = async () => {
-    if (!currentDocument) {
-      message.error('请先选择文件');
-      return;
-    }
-
+  const handleSubmit = async (values: any) => {
     try {
-      setProcessing(true);
-      const values = await form.validateFields();
-
-      // 构建处理配置
-      const config: ProcessConfig = {
-        loader: values.loader,
-        enable_table_recognition: values.enable_table_recognition || false,
-        enable_ocr: values.enable_ocr || false,
-        enable_image_analysis: values.enable_image_analysis || false,
-        remove_headers_footers: values.remove_headers_footers || false
-      };
-
-      // 调用处理接口
-      const updatedDoc = await DocumentService.processDocument(currentDocument.id, config);
-      onDocumentUpdate(updatedDoc);
-      message.success('文档加载成功');
-    } catch (error: any) {
-      message.error(`加载失败: ${error.response?.data?.detail || error.message}`);
-    } finally {
-      setProcessing(false);
+      await onProcess({
+        prompt: values.prompt,
+        model: values.model,
+        temperature: values.temperature,
+        maxTokens: values.maxTokens,
+      });
+    } catch (error) {
+      message.error('处理文档时出错');
     }
   };
 
   return (
-    <StyledCard title="加载工具配置">
+    <Card
+      title="处理配置"
+      className="h-full flex flex-col"
+      bodyStyle={{ height: 'calc(100% - 57px)', overflowY: 'auto' }}
+    >
       <Form
         form={form}
         layout="vertical"
+        onFinish={handleSubmit}
         initialValues={{
-          loader: 'langchain',
-          enable_table_recognition: false,
-          enable_ocr: false,
-          enable_image_analysis: false,
-          remove_headers_footers: false
+          model: 'gpt-3.5-turbo',
+          temperature: 0.7,
+          maxTokens: 2000,
         }}
+        className="flex flex-col h-full"
       >
-        <Form.Item
-          name="loader"
-          label="加载工具"
-          rules={[{ required: true, message: '请选择加载工具' }]}
-        >
-          <Select>
-            <Select.Option value="langchain">LangChain</Select.Option>
-            <Select.Option value="llamaindex">LlamaIndex</Select.Option>
-            <Select.Option value="unstructured">Unstructured</Select.Option>
-          </Select>
-        </Form.Item>
-
-        <Form.Item name="enable_table_recognition" valuePropName="checked">
-          <Checkbox>启用表格识别</Checkbox>
-        </Form.Item>
-
-        <Form.Item name="enable_ocr" valuePropName="checked">
-          <Checkbox>启用OCR</Checkbox>
-        </Form.Item>
-
-        <Form.Item name="enable_image_analysis" valuePropName="checked">
-          <Checkbox>启用图像分析</Checkbox>
-        </Form.Item>
-
-        <Form.Item name="remove_headers_footers" valuePropName="checked">
-          <Checkbox>移除页眉页脚</Checkbox>
-        </Form.Item>
-
-        <Form.Item>
-          <Button
-            type="primary"
-            onClick={handleProcess}
-            loading={processing}
-            disabled={!currentDocument}
-            block
+        <div className="flex-1 space-y-4">
+          <Form.Item
+            label="提示词"
+            name="prompt"
+            rules={[{ required: true, message: '请输入提示词' }]}
+            className="mb-4"
           >
-            开始加载
-          </Button>
+            <Input.TextArea
+              rows={4}
+              placeholder="请输入提示词，例如：'总结以下文档的主要内容'"
+              disabled={!selectedDocument || processing}
+              className="resize-none"
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="模型"
+            name="model"
+            rules={[{ required: true, message: '请选择模型' }]}
+            className="mb-4"
+          >
+            <Select
+              disabled={!selectedDocument || processing}
+              className="w-full"
+            >
+              <Option value="gpt-3.5-turbo">GPT-3.5 Turbo</Option>
+              <Option value="gpt-4">GPT-4</Option>
+            </Select>
+          </Form.Item>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Form.Item
+              label="温度"
+              name="temperature"
+              rules={[{ required: true, message: '请输入温度值' }]}
+              className="mb-0"
+            >
+              <Input
+                type="number"
+                min={0}
+                max={2}
+                step={0.1}
+                disabled={!selectedDocument || processing}
+                className="w-full"
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="最大 Token 数"
+              name="maxTokens"
+              rules={[{ required: true, message: '请输入最大 Token 数' }]}
+              className="mb-0"
+            >
+              <Input
+                type="number"
+                min={1}
+                max={4000}
+                disabled={!selectedDocument || processing}
+                className="w-full"
+              />
+            </Form.Item>
+          </div>
+        </div>
+
+        <Form.Item className="mt-4 mb-0">
+          <Space className="w-full justify-end">
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={processing}
+              disabled={!selectedDocument}
+              className="min-w-[100px]"
+            >
+              开始处理
+            </Button>
+          </Space>
         </Form.Item>
       </Form>
-    </StyledCard>
+    </Card>
   );
 };
 
