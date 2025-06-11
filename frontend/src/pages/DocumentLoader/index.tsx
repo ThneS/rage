@@ -116,7 +116,8 @@ const DocumentLoader: React.FC = () => {
     setFileList(info.fileList);
   };
 
-  const getFileIcon = (file: UploadFile) => {
+  const getFileIcon = (file: UploadFile | { name?: string }): React.ReactNode => {
+    if (!file?.name) return <FileTextOutlined />;
     const extension = file.name.split('.').pop()?.toLowerCase();
     switch (extension) {
       case 'pdf':
@@ -280,7 +281,11 @@ const DocumentLoader: React.FC = () => {
             <FileListContainer>
               {initialLoading ? (
                 <div style={{ textAlign: 'center', padding: '20px' }}>
-                  <Spin tip="加载文件列表..." />
+                  <Spin>
+                    <div style={{ padding: '50px', background: 'rgba(0, 0, 0, 0.05)' }}>
+                      加载文件列表...
+                    </div>
+                  </Spin>
                 </div>
               ) : serverFiles.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '20px', color: '#999' }}>
@@ -304,7 +309,7 @@ const DocumentLoader: React.FC = () => {
                       ]}
                     >
                       <List.Item.Meta
-                        avatar={getFileIcon({ name: file.filename } as UploadFile)}
+                        avatar={getFileIcon(file)}
                         title={file.filename}
                         description={
                           <div>
