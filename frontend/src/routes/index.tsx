@@ -1,7 +1,8 @@
+import { createBrowserRouter } from 'react-router-dom';
 import type { RouteObject } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
-import DocumentLoader from '../pages/DocumentLoader';
+import DocumentLoader from '@/pages/DocumentLoader';
 import DocumentSplitter from '../pages/DocumentSplitter';
 
 export const routes: RouteObject[] = [
@@ -28,3 +29,5 @@ export const routes: RouteObject[] = [
     ]
   }
 ];
+
+export const router = createBrowserRouter(routes);

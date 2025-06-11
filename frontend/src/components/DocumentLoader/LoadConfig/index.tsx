@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Form, Select, Checkbox, Button, message } from 'antd';
+import { Card, Form, Select, Checkbox, Button, App } from 'antd';
 import styled from '@emotion/styled';
 import type { Document } from '@/types/document';
 import { DocumentService } from '@/services/documentService';
@@ -28,6 +28,7 @@ interface ProcessConfig {
 const LoadConfig: React.FC<LoadConfigProps> = ({ currentDocument, onDocumentUpdate }) => {
   const [form] = Form.useForm();
   const [processing, setProcessing] = React.useState(false);
+  const { message } = App.useApp();
 
   const handleProcess = async () => {
     if (!currentDocument) {

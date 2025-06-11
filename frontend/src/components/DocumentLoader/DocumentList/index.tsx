@@ -5,7 +5,7 @@ import {
   Button,
   List,
   Input,
-  message,
+  App,
   Spin,
 } from 'antd';
 import {
@@ -17,7 +17,7 @@ import {
 } from '@ant-design/icons';
 import styled from '@emotion/styled';
 import type { UploadFile } from 'antd';
-import type { UploadChangeParam } from 'antd/es/upload';
+import type { UploadChangeParam, RcFile } from 'antd/es/upload';
 import { DocumentService } from '@/services/documentService';
 import type { Document } from '@/types/document';
 
@@ -62,14 +62,31 @@ const DocumentList: React.FC<DocumentListProps> = ({ onSelectDocument, processin
   const [serverFiles, setServerFiles] = useState<Document[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const { message } = App.useApp();
 
   const handleFileChange = (info: UploadChangeParam<UploadFile>) => {
     setFileList(info.fileList);
   };
 
-  const getFileIcon = (file: UploadFile | { name?: string }): React.ReactNode => {
-    if (!file?.name) return <FileTextOutlined />;
-    const extension = file.name.split('.').pop()?.toLowerCase();
+  const handleUpload = async (file: RcFile) => {
+    try {
+      const uploadedDoc = await DocumentService.uploadDocument(file);
+      if (uploadedDoc) {
+        onSelectDocument(uploadedDoc);
+        message.success('文件上传成功');
+        fetchServerFiles();
+      }
+      return false; // 阻止默认上传行为
+    } catch (error: any) {
+      message.error(`上传失败: ${error.response?.data?.detail || error.message}`);
+      return false;
+    }
+  };
+
+  const getFileIcon = (file: Document | UploadFile): React.ReactNode => {
+    const filename = 'filename' in file ? file.filename : file.name;
+    if (!filename) return <FileTextOutlined />;
+    const extension = filename.split('.').pop()?.toLowerCase();
     switch (extension) {
       case 'pdf':
         return <FilePdfOutlined style={{ color: '#ff4d4f' }} />;
@@ -110,21 +127,6 @@ const DocumentList: React.FC<DocumentListProps> = ({ onSelectDocument, processin
   // 处理文件搜索
   const handleSearch = (value: string) => {
     fetchServerFiles(value);
-  };
-
-  const handleUpload = async (file: UploadFile) => {
-    try {
-      const uploadedDoc = await DocumentService.uploadDocument(file as any);
-      if (uploadedDoc) {
-        onSelectDocument(uploadedDoc);
-        message.success('文件上传成功');
-        fetchServerFiles();
-      }
-      return uploadedDoc;
-    } catch (error: any) {
-      message.error(`上传失败: ${error.response?.data?.detail || error.message}`);
-      return null;
-    }
   };
 
   const handleSelectFile = async (file: Document) => {
