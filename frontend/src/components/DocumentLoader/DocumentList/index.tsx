@@ -130,7 +130,12 @@ const DocumentList: React.FC<DocumentListProps> = ({ onSelectDocument, processin
     <Card
       title="文档列表"
       className="h-full flex flex-col"
-      bodyStyle={{ height: 'calc(100% - 57px)', overflowY: 'auto' }}
+      styles={{
+        body: {
+          height: 'calc(100% - 57px)',
+          overflowY: 'auto'
+        }
+      }}
     >
       <div className="mb-4">
         <Search

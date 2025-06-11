@@ -48,7 +48,12 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
     <Card
       title="处理配置"
       className="h-full flex flex-col"
-      bodyStyle={{ height: 'calc(100% - 57px)', overflowY: 'auto' }}
+      styles={{
+        body: {
+          height: 'calc(100% - 57px)',
+          overflowY: 'auto'
+        }
+      }}
     >
       <Form
         form={form}

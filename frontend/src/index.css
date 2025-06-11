@@ -1,3 +1,55 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+@layer components {
+  .card-container {
+    @apply h-full flex flex-col;
+  }
+
+  .card-body {
+    @apply flex-1 overflow-y-auto;
+  }
+
+  .file-list-container {
+    @apply flex-1 overflow-y-auto;
+  }
+
+  .upload-area {
+    @apply mb-4;
+  }
+
+  .upload-area .ant-upload-drag {
+    @apply bg-gray-50 border border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-colors duration-300;
+  }
+
+  /* Ant Design 组件样式覆盖 */
+  .ant-card {
+    @apply shadow-sm;
+  }
+
+  .ant-card-head {
+    @apply border-b border-gray-200;
+  }
+
+  .ant-form-item-label > label {
+    @apply text-gray-700;
+  }
+
+  .ant-input,
+  .ant-input-textarea {
+    @apply rounded-md;
+  }
+
+  .ant-btn-primary {
+    @apply bg-blue-500 hover:bg-blue-600;
+  }
+
+  .ant-btn-link {
+    @apply text-blue-500 hover:text-blue-600;
+  }
+}
+
 :root {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji",
