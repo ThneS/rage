@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Card,
   Form,
@@ -7,20 +7,42 @@ import {
   Select,
   Space,
   App,
+  Switch,
+  InputNumber,
+  Divider,
+  Typography,
+  Tooltip,
 } from 'antd';
 import type { Document } from '@/types/document';
+import { getDocumentLoadConfig } from '@/api/documents';
+import type { FileTypeConfigResponse } from '@/types/document';
 
 const { Option } = Select;
+const { Text } = Typography;
 
 interface LoadConfigProps {
   selectedDocument: Document | null;
-  onProcess: (config: {
-    prompt: string;
-    model: string;
-    temperature: number;
-    maxTokens: number;
-  }) => void;
+  onProcess: (config: any) => void;
   processing: boolean;
+}
+
+interface FormField {
+  name: string;
+  label: string;
+  type: 'switch' | 'select' | 'radio' | 'number' | 'text' | 'textarea' | 'range';
+  description?: string;
+  default: any;
+  required: boolean;
+  options?: Array<{label: string; value: any; description?: string}>;
+  min?: number;
+  max?: number;
+  step?: number;
+  placeholder?: string;
+  rows?: number;
+  disabled: boolean;
+  hidden: boolean;
+  group?: string;
+  dependencies?: {field: string; value: any};
 }
 
 const LoadConfig: React.FC<LoadConfigProps> = ({
@@ -30,23 +52,158 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
 }) => {
   const [form] = Form.useForm();
   const { message } = App.useApp();
+  const [config, setConfig] = useState<FileTypeConfigResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // 获取文档加载配置
+  useEffect(() => {
+    const fetchConfig = async () => {
+      if (!selectedDocument) {
+        setConfig(null);
+        form.resetFields();
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const response = await getDocumentLoadConfig(selectedDocument.id);
+        setConfig(response);
+        form.setFieldsValue(response.default_config);
+      } catch (error) {
+        message.error('获取文档配置失败');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchConfig();
+  }, [selectedDocument, form, message]);
 
   const handleSubmit = async (values: any) => {
     try {
-      await onProcess({
-        prompt: values.prompt,
-        model: values.model,
-        temperature: values.temperature,
-        maxTokens: values.maxTokens,
-      });
+      await onProcess(values);
     } catch (error) {
       message.error('处理文档时出错');
     }
   };
 
+  // 根据字段类型渲染表单项
+  const renderFormItem = (field: FormField) => {
+    const commonProps = {
+      disabled: field.disabled || processing || !selectedDocument,
+      placeholder: field.placeholder,
+    };
+
+    switch (field.type) {
+      case 'switch':
+        return <Switch {...commonProps} />;
+
+      case 'select':
+        return (
+          <Select {...commonProps}>
+            {field.options?.map(option => (
+              <Option key={option.value} value={option.value}>
+                {option.label}
+              </Option>
+            ))}
+          </Select>
+        );
+
+      case 'radio':
+        return (
+          <Select {...commonProps} mode="radio">
+            {field.options?.map(option => (
+              <Option key={option.value} value={option.value}>
+                {option.label}
+              </Option>
+            ))}
+          </Select>
+        );
+
+      case 'number':
+        return (
+          <InputNumber
+            {...commonProps}
+            min={field.min}
+            max={field.max}
+            step={field.step}
+            className="w-full"
+          />
+        );
+
+      case 'textarea':
+        return (
+          <Input.TextArea
+            {...commonProps}
+            rows={field.rows || 4}
+            className="resize-none"
+          />
+        );
+
+      case 'range':
+        return (
+          <InputNumber
+            {...commonProps}
+            min={field.min}
+            max={field.max}
+            step={field.step}
+            className="w-full"
+          />
+        );
+
+      default:
+        return <Input {...commonProps} />;
+    }
+  };
+
+  // 按组渲染表单项
+  const renderFormGroups = () => {
+    if (!config) return null;
+
+    const groups = config.fields.reduce((acc, field) => {
+      const group = field.group || '其他设置';
+      if (!acc[group]) acc[group] = [];
+      acc[group].push(field);
+      return acc;
+    }, {} as Record<string, FormField[]>);
+
+    return Object.entries(groups).map(([groupName, fields]) => (
+      <div key={groupName} className="mb-6">
+        <Divider orientation="left">{groupName}</Divider>
+        <div className="space-y-4">
+          {fields.map(field => (
+            <Form.Item
+              key={field.name}
+              label={
+                <Tooltip title={field.description}>
+                  <Space>
+                    {field.label}
+                    {field.required && <Text type="danger">*</Text>}
+                  </Space>
+                </Tooltip>
+              }
+              name={field.name}
+              valuePropName={field.type === 'switch' ? 'checked' : 'value'}
+              rules={field.required ? [{ required: true, message: `请输入${field.label}` }] : []}
+              hidden={field.hidden}
+            >
+              {renderFormItem(field)}
+            </Form.Item>
+          ))}
+        </div>
+      </div>
+    ));
+  };
+
   return (
     <Card
-      title="处理配置"
+      title={
+        <Space>
+          {config?.icon && <i className={`fas fa-${config.icon}`} />}
+          <span>处理配置</span>
+          {config?.name && <Text type="secondary">({config.name})</Text>}
+        </Space>
+      }
       className="h-full flex flex-col"
       styles={{
         body: {
@@ -54,80 +211,21 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
           overflowY: 'auto'
         }
       }}
+      loading={loading}
     >
       <Form
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
-        initialValues={{
-          model: 'gpt-3.5-turbo',
-          temperature: 0.7,
-          maxTokens: 2000,
-        }}
         className="flex flex-col h-full"
       >
-        <div className="flex-1 space-y-4">
-          <Form.Item
-            label="提示词"
-            name="prompt"
-            rules={[{ required: true, message: '请输入提示词' }]}
-            className="mb-4"
-          >
-            <Input.TextArea
-              rows={4}
-              placeholder="请输入提示词，例如：'总结以下文档的主要内容'"
-              disabled={!selectedDocument || processing}
-              className="resize-none"
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="模型"
-            name="model"
-            rules={[{ required: true, message: '请选择模型' }]}
-            className="mb-4"
-          >
-            <Select
-              disabled={!selectedDocument || processing}
-              className="w-full"
-            >
-              <Option value="gpt-3.5-turbo">GPT-3.5 Turbo</Option>
-              <Option value="gpt-4">GPT-4</Option>
-            </Select>
-          </Form.Item>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Form.Item
-              label="温度"
-              name="temperature"
-              rules={[{ required: true, message: '请输入温度值' }]}
-              className="mb-0"
-            >
-              <Input
-                type="number"
-                min={0}
-                max={2}
-                step={0.1}
-                disabled={!selectedDocument || processing}
-                className="w-full"
-              />
-            </Form.Item>
-
-            <Form.Item
-              label="最大 Token 数"
-              name="maxTokens"
-              rules={[{ required: true, message: '请输入最大 Token 数' }]}
-              className="mb-0"
-            >
-              <Input
-                type="number"
-                min={1}
-                max={4000}
-                disabled={!selectedDocument || processing}
-                className="w-full"
-              />
-            </Form.Item>
-          </div>
+        <div className="flex-1">
+          {config?.description && (
+            <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+              <Text type="secondary">{config.description}</Text>
+            </div>
+          )}
+          {renderFormGroups()}
         </div>
 
         <Form.Item className="mt-4 mb-0">

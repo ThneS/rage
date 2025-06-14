@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     ]
 
     # 数据库配置
-    DATABASE_URL: str = "sqlite:///./rag_tuning.db"
+    SQLALCHEMY_DATABASE_URI: str = "sqlite:///./rag_tuning.db"
 
     # 向量数据库配置
     VECTOR_DB_DIR: str = "vector_db"

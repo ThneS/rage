@@ -1,194 +1,217 @@
 import os
-from typing import List, Optional, Dict, Any
+import logging
+from typing import Optional, Dict, Any, List
 from fastapi import UploadFile, HTTPException
 from sqlalchemy.orm import Session
 from app.core.config import settings
-from app.models.document import Document, DocumentChunk, ProcessingLog
-from app.schemas.document import DocumentCreate, DocumentProcessingConfig, ChunkingConfig
+from app.core.document_config import get_file_type_config, get_default_load_config
+from app.models.document import Document
 from app.utils.file import save_upload_file, get_file_extension
+from app.schemas.document import DocumentLoadConfig
 
-def get_parser(parser_type: str):
-    if parser_type == "langchain":
-        from app.services.parsers.langchain_parser import LangchainParser
-        return LangchainParser()
-    elif parser_type == "llamaindex":
-        from app.services.parsers.llamaindex_parser import LlamaIndexParser
-        return LlamaIndexParser()
-    else:
-        raise ValueError(f"Unsupported parser type: {parser_type}")
-
-def get_chunker(chunker_type: str):
-    if chunker_type == "llm":
-        from app.services.chunkers.llm_chunker import LLMChunker
-        return LLMChunker()
-    else:
-        raise ValueError(f"Unsupported chunker type: {chunker_type}")
+# 配置日志
+logger = logging.getLogger(__name__)
 
 class DocumentService:
     def __init__(self, db: Session):
         self.db = db
+
+    def get_document(self, document_id: int) -> Optional[Document]:
+        """获取文档信息
+
+        Args:
+            document_id: 文档ID
+
+        Returns:
+            Document: 文档信息，如果不存在则返回 None
+
+        Raises:
+            HTTPException:
+                - 404: 文档不存在
+                - 400: 文件类型不支持
+                - 500: 服务器内部错误
+        """
+        logger.debug(f"开始查询文档: document_id={document_id}")
+
+        try:
+            # 查询文档
+            document = self.db.query(Document).filter(Document.id == document_id).first()
+
+            # 如果文档不存在，直接返回 None，让调用者处理 404 错误
+            if not document:
+                logger.warning(f"文档不存在: document_id={document_id}")
+                return None
+
+            logger.debug(f"文档查询成功: document_id={document_id}, file_type={document.file_type}")
+
+            # 验证文件类型
+            try:
+                file_ext = document.file_type.strip().lower().lstrip('.')
+                if not file_ext:
+                    logger.error(f"文档文件类型为空: document_id={document_id}")
+                    raise HTTPException(
+                        status_code=500,
+                        detail=f"文档 {document_id} 的文件类型为空"
+                    )
+                # 尝试获取文件类型配置，验证是否支持
+                logger.debug(f"验证文件类型: document_id={document_id}, file_type={file_ext}")
+                get_file_type_config(file_ext)
+                logger.debug(f"文件类型验证成功: document_id={document_id}, file_type={file_ext}")
+            except ValueError as e:
+                logger.warning(f"文件类型不支持: document_id={document_id}, file_type={file_ext}, error={str(e)}")
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"文档 {document_id} 的文件类型无效: {str(e)}"
+                )
+            except Exception as e:
+                logger.error(f"验证文件类型时出错: document_id={document_id}, error={str(e)}")
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"验证文档 {document_id} 的文件类型时出错: {str(e)}"
+                )
+
+            return document
+
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"获取文档信息失败: document_id={document_id}, error={str(e)}", exc_info=True)
+            raise HTTPException(
+                status_code=500,
+                detail=f"获取文档信息失败: {str(e)}"
+            )
+
+    def get_documents(self) -> List[Document]:
+        """获取所有文档列表
+
+        Returns:
+            List[Document]: 文档列表
+
+        Raises:
+            HTTPException: 当数据库查询出错时抛出
+        """
+        try:
+            return self.db.query(Document).all()
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"获取文档列表失败: {str(e)}"
+            )
 
     async def create_document(
         self,
         file: UploadFile,
         metadata: Optional[Dict[str, Any]] = None
     ) -> Document:
-        # 验证文件类型
-        file_ext = get_file_extension(file.filename)
-        if file_ext not in settings.ALLOWED_EXTENSIONS:
-            raise HTTPException(
-                status_code=400,
-                detail=f"不支持的文件类型: {file_ext}"
+        """创建新文档
+
+        Args:
+            file: 上传的文件
+            metadata: 文档元数据
+
+        Returns:
+            Document: 创建的文档信息
+
+        Raises:
+            HTTPException: 当文件类型不支持或保存失败时抛出
+        """
+        try:
+            # 验证文件类型
+            file_ext = get_file_extension(file.filename)
+            try:
+                file_config = get_file_type_config(file_ext)
+            except ValueError as e:
+                raise HTTPException(status_code=400, detail=str(e))
+
+            # 保存文件
+            file_path = await save_upload_file(file)
+
+            # 创建文档记录
+            db_document = Document(
+                filename=file.filename,
+                file_path=file_path,
+                file_type=file_ext,
+                file_size=os.path.getsize(file_path),
+                doc_metadata={
+                    "file_type_info": {
+                        "name": file_config.name,
+                        "description": file_config.description
+                    },
+                    **(metadata or {})
+                }
             )
+            self.db.add(db_document)
+            self.db.commit()
+            self.db.refresh(db_document)
 
-        # 保存文件
-        file_path = await save_upload_file(file)
-
-        # 创建文档记录
-        db_document = Document(
-            filename=file.filename,
-            file_path=file_path,
-            file_type=file_ext,
-            file_size=os.path.getsize(file_path),
-            doc_metadata=metadata
-        )
-        self.db.add(db_document)
-        self.db.commit()
-        self.db.refresh(db_document)
-
-        # 创建处理日志
-        self._create_processing_log(
-            document_id=db_document.id,
-            step="upload",
-            status="success",
-            message="文件上传成功"
-        )
-
-        return db_document
+            return db_document
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"创建文档失败: {str(e)}"
+            )
 
     def process_document(
         self,
         document_id: int,
-        config: DocumentProcessingConfig
+        config: DocumentLoadConfig
     ) -> Document:
-        # 获取文档
-        document = self.db.query(Document).filter(Document.id == document_id).first()
-        if not document:
-            raise HTTPException(status_code=404, detail="文档不存在")
+        """处理文档
 
+        Args:
+            document_id: 文档ID
+            config: 处理配置
+
+        Returns:
+            Document: 更新后的文档信息
+
+        Raises:
+            HTTPException: 当文档不存在或处理失败时抛出
+        """
         try:
-            # 更新状态
-            document.status = "processing"
-            self.db.commit()
+            document = self.get_document(document_id)
+            if not document:
+                raise HTTPException(status_code=404, detail="文档不存在")
 
-            # 创建处理日志
-            self._create_processing_log(
-                document_id=document_id,
-                step="parse",
-                status="processing",
-                message="开始解析文档"
-            )
-
-            # 获取解析器并解析文档
-            parser = get_parser(config.parser)
-            content = parser.parse(
-                document.file_path,
-                enable_table_recognition=config.enable_table_recognition,
-                enable_ocr=config.enable_ocr,
-                enable_image_analysis=config.enable_image_analysis,
-                remove_headers_footers=config.remove_headers_footers
-            )
-
-            # 更新处理日志
-            self._create_processing_log(
-                document_id=document_id,
-                step="parse",
-                status="success",
-                message="文档解析完成"
-            )
-
-            # 获取分块器并分块
-            chunker = get_chunker(config.chunking_config.method)
-            chunks = chunker.split(content)
-
-            # 保存分块
-            for i, chunk in enumerate(chunks):
-                db_chunk = DocumentChunk(
-                    document_id=document_id,
-                    chunk_index=i,
-                    content=chunk.content,
-                    chunk_metadata=chunk.metadata
-                )
-                self.db.add(db_chunk)
-
-            # 更新状态
-            document.status = "completed"
-            self.db.commit()
-
-            # 创建处理日志
-            self._create_processing_log(
-                document_id=document_id,
-                step="chunk",
-                status="success",
-                message=f"文档分块完成，共{len(chunks)}个块"
-            )
+            # TODO: 实现文档处理逻辑
+            # 这里应该根据不同的文件类型和配置进行相应的处理
 
             return document
-
+        except HTTPException:
+            raise
         except Exception as e:
-            # 更新状态和错误信息
-            document.status = "failed"
-            document.error_message = str(e)
-            self.db.commit()
-
-            # 创建错误日志
-            self._create_processing_log(
-                document_id=document_id,
-                step="process",
-                status="error",
-                message=str(e)
-            )
-
             raise HTTPException(
                 status_code=500,
-                detail=f"文档处理失败: {str(e)}"
+                detail=f"处理文档失败: {str(e)}"
             )
 
-    def get_document(self, document_id: int) -> Document:
-        document = self.db.query(Document).filter(Document.id == document_id).first()
-        if not document:
-            raise HTTPException(status_code=404, detail="文档不存在")
-        return document
+    def get_load_config(self, document_id: int) -> DocumentLoadConfig:
+        """获取文档加载配置
 
-    def get_document_chunks(
-        self,
-        document_id: int,
-        skip: int = 0,
-        limit: int = 100
-    ) -> List[DocumentChunk]:
-        return self.db.query(DocumentChunk)\
-            .filter(DocumentChunk.document_id == document_id)\
-            .order_by(DocumentChunk.chunk_index)\
-            .offset(skip)\
-            .limit(limit)\
-            .all()
+        Args:
+            document_id: 文档ID
 
-    def _create_processing_log(
-        self,
-        document_id: int,
-        step: str,
-        status: str,
-        message: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
-    ) -> ProcessingLog:
-        log = ProcessingLog(
-            document_id=document_id,
-            step=step,
-            status=status,
-            message=message,
-            log_metadata=metadata
-        )
-        self.db.add(log)
-        self.db.commit()
-        self.db.refresh(log)
-        return log
+        Returns:
+            DocumentLoadConfig: 文档加载配置
+
+        Raises:
+            HTTPException: 当文档不存在或获取配置失败时抛出
+        """
+        try:
+            document = self.get_document(document_id)
+            if not document:
+                raise HTTPException(status_code=404, detail="文档不存在")
+
+            try:
+                return get_default_load_config(document.file_type)
+            except ValueError as e:
+                raise HTTPException(status_code=400, detail=str(e))
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"获取加载配置失败: {str(e)}"
+            )
