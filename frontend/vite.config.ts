@@ -16,6 +16,10 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true,
       }
-    }
+    },
+    // 开发服务器配置
+    open: true, // 自动打开浏览器
+    port: 5173,
+    host: true, // 监听所有地址
   }
 })
