@@ -48,26 +48,6 @@ export interface FileTypeConfigResponse {
   group_order: string[];
 }
 
-export interface DocumentLoadConfig {
-  extract_text?: boolean;
-  extract_images?: boolean;
-  extract_tables?: boolean;
-  ocr_enabled?: boolean;
-  page_range?: string | number[];
-  password?: string;
-  extract_headers?: boolean;
-  extract_footers?: boolean;
-  extract_comments?: boolean;
-  extract_sheets?: string | string[];
-  extract_formulas?: boolean;
-  extract_charts?: boolean;
-  header_row?: number;
-  skip_empty_rows?: boolean;
-  delimiter?: string;
-  encoding?: string;
-  has_header?: boolean;
-  ocr_language?: string;
-  extract_metadata?: boolean;
-  resize?: boolean;
-  max_size?: [number, number];
+export interface DocumentLoadConfig extends FileTypeConfigResponse {
+  [key: string]: any;  // 允许动态配置项
 }

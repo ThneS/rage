@@ -4,7 +4,6 @@ import {
   Upload,
   Button,
   Table,
-  App,
   Popconfirm,
   Spin,
 } from 'antd';
@@ -13,7 +12,8 @@ import {
   DeleteOutlined,
 } from '@ant-design/icons';
 import type { UploadFile, RcFile } from 'antd/es/upload';
-import { documentService } from '@/services/documentService';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { fetchDocuments, uploadDocument, deleteDocument } from '@/store/slices/documentSlice';
 import type { Document } from '@/types/document';
 
 const { Dragger } = Upload;
@@ -25,46 +25,21 @@ interface DocumentListProps {
 
 const DocumentList: React.FC<DocumentListProps> = ({ onSelectDocument, selectedId }) => {
   const [fileList, setFileList] = useState<UploadFile[]>([]);
-  const [serverFiles, setServerFiles] = useState<Document[]>([]);
-  const [loading, setLoading] = useState(false);
-  const { message } = App.useApp();
-
-  const fetchServerFiles = async () => {
-    setLoading(true);
-    try {
-      const files = await documentService.getDocuments();
-      setServerFiles(files);
-    } catch (error: any) {
-      message.error(`获取文件列表失败: ${error.message}`);
-      setServerFiles([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const dispatch = useAppDispatch();
+  const serverFiles = useAppSelector(state => state.document.documents);
+  const loading = useAppSelector(state => state.document.loading);
 
   useEffect(() => {
-    fetchServerFiles();
-  }, []);
+    dispatch(fetchDocuments());
+  }, [dispatch]);
 
   const handleUpload = async (file: RcFile) => {
-    try {
-      await documentService.uploadDocument(file);
-      message.success('文件上传成功');
-      fetchServerFiles();
-    } catch (error: any) {
-      message.error(`上传失败: ${error.response?.data?.detail || error.message}`);
-    }
+    dispatch(uploadDocument(file));
     return false; // 阻止默认上传行为
   };
 
-  const handleDelete = async (id: number) => {
-    try {
-      await documentService.deleteDocument(id);
-      message.success('删除成功');
-      fetchServerFiles();
-    } catch (error: any) {
-      message.error(`删除失败: ${error.message}`);
-    }
+  const handleDelete = (id: number) => {
+    dispatch(deleteDocument(id));
   };
 
   const columns = [

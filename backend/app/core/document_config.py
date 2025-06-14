@@ -26,6 +26,7 @@ class ConfigField(BaseModel):
     group: Optional[str] = Field(None, description="分组名称")
     dependencies: Optional[Dict[str, Any]] = Field(None, description="依赖关系，例如：{'field': 'extract_text', 'value': True}")
 
+
 class FileTypeConfig(BaseModel):
     """文件类型配置"""
     name: str = Field(..., description="文件类型名称")

@@ -1,5 +1,5 @@
 from typing import Optional, List
-from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, Body
 from sqlalchemy.orm import Session
 import json
 import logging
@@ -220,11 +220,25 @@ def delete_document(
 @router.post("/{document_id}/parse", response_model=ResponseModel[Document])
 def process_document(
     document_id: int,
-    config: DocumentLoadConfig,
+    config: DocumentLoadConfig = Body(..., description="加载配置参数"),
     db: Session = Depends(get_db)
 ):
-    """处理文档（解析和分块）"""
+    """
+    处理文档（解析和分块），参数结构与 load-config 返回一致
+    """
+    # 获取文档类型配置
     service = DocumentService(db)
-    doc = service.process_document(document_id, config)
+    try:
+        document = service.get_document(document_id)
+    except Exception as e:
+        logger.error(f"获取文档信息时发生异常: document_id={document_id}, error={str(e)}", exc_info=True)
+        if isinstance(e, HTTPException):
+            raise
+        raise HTTPException(
+            status_code=500,
+            detail=f"获取文档信息失败: {str(e)}"
+        )
+
+    doc = service.parse_document(document=document, config=config)
     doc_pydantic = Document.model_validate(doc)
     return ResponseModel[Document](data=doc_pydantic)

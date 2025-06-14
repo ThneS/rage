@@ -15,15 +15,15 @@ import {
   Tabs,
 } from 'antd';
 import type { Document } from '@/types/document';
-import type { FileTypeConfigResponse, ConfigField } from '@/types/document';
-import { documentService } from '@/services/documentService';
+import type { DocumentLoadConfig, ConfigField } from '@/types/document';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { processDocument, fetchLoadConfig } from '@/store/slices/documentSlice';
 
 const { Option } = Select;
 const { Text } = Typography;
 
 interface LoadConfigProps {
   selectedDocument: Document | null;
-  onProcess: (config: any) => void;
   processing: boolean;
   onViewLoad?: () => void;
   loadResult?: any;
@@ -47,56 +47,50 @@ const shouldShowField = (field: ConfigField, formValues: Record<string, any>): b
 
 const LoadConfig: React.FC<LoadConfigProps> = ({
   selectedDocument,
-  onProcess,
   processing,
   onViewLoad,
   loadResult,
 }) => {
   const [form] = Form.useForm();
   const { message } = App.useApp();
-  const [config, setConfig] = useState<FileTypeConfigResponse | null>(null);
-  const [loading, setLoading] = useState(false);
+  const config = useAppSelector(state => state.document.config);
+  const loading = useAppSelector(state => state.document.loading);
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [initialValues, setInitialValues] = useState<Record<string, any>>({});
+  const dispatch = useAppDispatch();
 
   // 获取文档加载配置
   useEffect(() => {
-    const fetchConfig = async () => {
-      if (!selectedDocument) {
-        setConfig(null);
-        setInitialValues({});
-        setFormValues({});
-        return;
-      }
+    if (selectedDocument) {
+      dispatch(fetchLoadConfig(selectedDocument.id));
+    }
+  }, [selectedDocument, dispatch]);
 
-      try {
-        setLoading(true);
-        const response = await documentService.getLoadConfig(selectedDocument.id);
-        setConfig(response);
-        const defaultValues = response.default_config;
-        setInitialValues(defaultValues);
-        setFormValues(defaultValues);
-      } catch (error) {
-        message.error('获取文档配置失败');
-      } finally {
-        setLoading(false);
-      }
-    };
+  useEffect(() => {
+    if (config) {
+      setInitialValues(config.default_config || {});
+      setFormValues(config.default_config || {});
+    }
+  }, [config]);
 
-    fetchConfig();
-  }, [selectedDocument, message]);
-
-  // 监听表单值变化
+  // 监听表单值变化，同步更新到config
   const handleValuesChange = (_: any, allValues: Record<string, any>) => {
     setFormValues(allValues);
   };
-
-  const handleSubmit = async (values: any) => {
-    try {
-      await onProcess(values);
-    } catch (error) {
-      message.error('处理文档时出错');
+  const handleSubmit = async (values: Record<string, any>) => {
+    if (!config || !selectedDocument) {
+      message.error('配置信息不完整');
+      return;
     }
+    // 合并配置信息和表单值
+    const submitConfig: DocumentLoadConfig = {
+      ...config,
+      default_config: {
+        ...config.default_config,
+        ...values
+      }
+    };
+    dispatch(processDocument(selectedDocument.id, submitConfig));
   };
 
   // 根据字段类型渲染表单项

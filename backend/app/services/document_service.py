@@ -154,9 +154,9 @@ class DocumentService:
                 detail=f"创建文档失败: {str(e)}"
             )
 
-    def process_document(
+    def parse_document(
         self,
-        document_id: int,
+        document: Document,
         config: DocumentLoadConfig
     ) -> Document:
         """处理文档
@@ -172,15 +172,13 @@ class DocumentService:
             HTTPException: 当文档不存在或处理失败时抛出
         """
         try:
-            document = self.get_document(document_id)
-            if not document:
-                raise HTTPException(status_code=404, detail="文档不存在")
-
             file_type = document.file_type.lower()
             file_path = document.file_path
 
             if file_type != "pdf":
                 raise HTTPException(status_code=400, detail="仅支持PDF文档处理")
+
+            # 根据 config里面的的group_order过滤fields，选择可用的字段，在读取的取值
 
             loader_tool = getattr(config, 'loader_tool', None) or (hasattr(config, 'dict') and config.dict().get('loader_tool')) or 'langchain'
             # config 可能是 Pydantic 对象，转为 dict
