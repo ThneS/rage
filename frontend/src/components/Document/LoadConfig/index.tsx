@@ -12,10 +12,12 @@ import {
   Divider,
   Typography,
   Tooltip,
+  Radio,
+  Tabs,
 } from 'antd';
 import type { Document } from '@/types/document';
-import { getDocumentLoadConfig } from '@/api/documents';
 import type { FileTypeConfigResponse } from '@/types/document';
+import { documentService } from '@/services/documentService';
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -24,6 +26,8 @@ interface LoadConfigProps {
   selectedDocument: Document | null;
   onProcess: (config: any) => void;
   processing: boolean;
+  onViewLoad?: () => void;
+  loadResult?: any;
 }
 
 interface FormField {
@@ -42,13 +46,15 @@ interface FormField {
   disabled: boolean;
   hidden: boolean;
   group?: string;
-  dependencies?: {field: string; value: any};
+  dependencies?: Record<string, any>;
 }
 
 const LoadConfig: React.FC<LoadConfigProps> = ({
   selectedDocument,
   onProcess,
   processing,
+  onViewLoad,
+  loadResult,
 }) => {
   const [form] = Form.useForm();
   const { message } = App.useApp();
@@ -66,7 +72,7 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
 
       try {
         setLoading(true);
-        const response = await getDocumentLoadConfig(selectedDocument.id);
+        const response = await documentService.getLoadConfig(selectedDocument.id);
         setConfig(response);
         form.setFieldsValue(response.default_config);
       } catch (error) {
@@ -111,13 +117,13 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
 
       case 'radio':
         return (
-          <Select {...commonProps} mode="radio">
+          <Radio.Group {...commonProps}>
             {field.options?.map(option => (
-              <Option key={option.value} value={option.value}>
+              <Radio key={option.value} value={option.value}>
                 {option.label}
-              </Option>
+              </Radio>
             ))}
-          </Select>
+          </Radio.Group>
         );
 
       case 'number':
@@ -156,43 +162,55 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
     }
   };
 
-  // 按组渲染表单项
+  // 按组渲染表单项（Tabs 方式）
   const renderFormGroups = () => {
     if (!config) return null;
 
     const groups = config.fields.reduce((acc, field) => {
       const group = field.group || '其他设置';
       if (!acc[group]) acc[group] = [];
-      acc[group].push(field);
+      acc[group].push({
+        ...field,
+        required: !!field.required,
+        disabled: !!field.disabled,
+        hidden: !!field.hidden,
+      });
       return acc;
     }, {} as Record<string, FormField[]>);
 
-    return Object.entries(groups).map(([groupName, fields]) => (
-      <div key={groupName} className="mb-6">
-        <Divider orientation="left">{groupName}</Divider>
-        <div className="space-y-4">
-          {fields.map(field => (
-            <Form.Item
-              key={field.name}
-              label={
-                <Tooltip title={field.description}>
-                  <Space>
-                    {field.label}
-                    {field.required && <Text type="danger">*</Text>}
-                  </Space>
-                </Tooltip>
-              }
-              name={field.name}
-              valuePropName={field.type === 'switch' ? 'checked' : 'value'}
-              rules={field.required ? [{ required: true, message: `请输入${field.label}` }] : []}
-              hidden={field.hidden}
-            >
-              {renderFormItem(field)}
-            </Form.Item>
-          ))}
-        </div>
-      </div>
-    ));
+    return (
+      <Tabs
+        tabPosition="top"
+        style={{ height: '100%' }}
+        items={Object.entries(groups).map(([groupName, fields]) => ({
+          key: groupName,
+          label: groupName,
+          children: (
+            <div className="space-y-4">
+              {fields.map(field => (
+                <Form.Item
+                  key={field.name}
+                  label={
+                    <Tooltip title={field.description}>
+                      <Space>
+                        {field.label}
+                        {field.required && <Text type="danger">*</Text>}
+                      </Space>
+                    </Tooltip>
+                  }
+                  name={field.name}
+                  valuePropName={field.type === 'switch' ? 'checked' : 'value'}
+                  rules={field.required ? [{ required: true, message: `请输入${field.label}` }] : []}
+                  hidden={field.hidden}
+                >
+                  {renderFormItem(field)}
+                </Form.Item>
+              ))}
+            </div>
+          ),
+        }))}
+      />
+    );
   };
 
   return (
@@ -204,6 +222,11 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
           {config?.name && <Text type="secondary">({config.name})</Text>}
         </Space>
       }
+      extra={
+        selectedDocument ? (
+          <Text type="secondary">关联文档：{selectedDocument.filename}</Text>
+        ) : null
+      }
       className="h-full flex flex-col"
       styles={{
         body: {
@@ -213,35 +236,57 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
       }}
       loading={loading}
     >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-        className="flex flex-col h-full"
-      >
-        <div className="flex-1">
-          {config?.description && (
-            <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-              <Text type="secondary">{config.description}</Text>
-            </div>
-          )}
-          {renderFormGroups()}
+      {!selectedDocument ? (
+        <div className="flex flex-col items-center justify-center h-full text-gray-400">
+          <div className="text-lg mb-2">请先在左侧选择一个文档</div>
         </div>
+      ) : loading ? (
+        <div className="flex flex-col items-center justify-center h-full text-gray-400">
+          <div className="text-lg mb-2">正在加载配置...</div>
+        </div>
+      ) : !config ? (
+        <div className="flex flex-col items-center justify-center h-full text-gray-400">
+          <div className="text-lg mb-2">未获取到配置，请重试或联系管理员</div>
+        </div>
+      ) : (
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          className="flex flex-col h-full"
+        >
+          <div className="flex-1">
+            {config?.description && (
+              <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                <Text type="secondary">{config.description}</Text>
+              </div>
+            )}
+            {renderFormGroups()}
+          </div>
 
-        <Form.Item className="mt-4 mb-0">
-          <Space className="w-full justify-end">
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={processing}
-              disabled={!selectedDocument}
-              className="min-w-[100px]"
-            >
-              开始处理
-            </Button>
-          </Space>
-        </Form.Item>
-      </Form>
+          <Form.Item className="mt-4 mb-0">
+            <Space className="w-full justify-end">
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={processing}
+                disabled={!selectedDocument}
+                style={{ minWidth: 100 }}
+              >
+                开始处理
+              </Button>
+              <Button
+                type="default"
+                onClick={onViewLoad}
+                style={{ minWidth: 100 }}
+                disabled={!selectedDocument || !loadResult}
+              >
+                查看加载
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      )}
     </Card>
   );
 };
