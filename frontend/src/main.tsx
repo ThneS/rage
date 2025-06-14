@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+// import 'antd/dist/antd.compatible.css'
 
 // 开发环境检查
 if (import.meta.env.DEV) {

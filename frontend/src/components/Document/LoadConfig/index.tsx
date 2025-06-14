@@ -70,8 +70,9 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
     if (config) {
       setInitialValues(config.default_config || {});
       setFormValues(config.default_config || {});
+      form.setFieldsValue(config.default_config || {});
     }
-  }, [config]);
+  }, [config, form]);
 
   // 监听表单值变化，同步更新到config
   const handleValuesChange = (_: any, allValues: Record<string, any>) => {
@@ -177,7 +178,6 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
 
       // 如果分组下没有可见的字段，则不显示该分组
       if (fields.length === 0) return null;
-
       return {
         key: groupName,
         label: groupName,

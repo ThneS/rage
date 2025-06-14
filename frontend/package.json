@@ -18,7 +18,7 @@
     "@reduxjs/toolkit": "^2.8.2",
     "@types/react-router-dom": "^5.3.3",
     "@types/styled-components": "^5.1.34",
-    "antd": "^5.25.4",
+    "antd": "^5.26.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-redux": "^9.2.0",
