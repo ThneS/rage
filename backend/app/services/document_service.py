@@ -1,12 +1,21 @@
 import os
 import logging
-from typing import Optional, Dict, Any, List
+import hashlib
+import json
+from typing import Optional, Dict, Any, List, Tuple
+from datetime import datetime
 from fastapi import UploadFile, HTTPException
 from sqlalchemy.orm import Session
 from app.core.document_config import get_file_type_config, get_default_load_config
 from app.models.document import Document
 from app.utils.file import save_upload_file, get_file_extension, delete_file
-from app.schemas.document import DocumentLoadConfig, LangChainDocument
+from app.schemas.document import (
+    DocumentLoadConfig,
+    LangChainDocument,
+    DocumentStatus,
+    LoadConfig,
+    LoadResult
+)
 from app.services.parsers import LangchainParser, LlamaIndexParser
 
 # 配置日志
@@ -15,6 +24,19 @@ logger = logging.getLogger(__name__)
 class DocumentService:
     def __init__(self, db: Session):
         self.db = db
+    def _compute_config_hash(self, config: Dict[str, Any]) -> str:
+        """计算配置的哈希值
+
+        Args:
+            config: 配置字典
+
+        Returns:
+            str: 配置的哈希值
+        """
+        # 将配置转换为JSON字符串，确保键值对顺序一致
+        config_str = json.dumps(config, sort_keys=True)
+        # 使用SHA-256计算哈希值
+        return hashlib.sha256(config_str.encode()).hexdigest()
 
     def get_document(self, document_id: int) -> Optional[Document]:
         """获取文档信息
@@ -192,6 +214,14 @@ class DocumentService:
             # 存入 doc_metadata
             document.doc_metadata = document.doc_metadata or {}
             document.doc_metadata["parse_result"] = parse_result
+            # 更新文档状态
+            document.status = DocumentStatus.COMPLETED
+            # 将config转为json进行存储
+            document.load_config = {
+                "config": config.model_dump(),
+                "hash": self._compute_config_hash(config.model_dump()),
+                "created_at": datetime.now().isoformat()
+            }
             self.db.commit()
             self.db.refresh(document)
             return parse_result

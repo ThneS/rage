@@ -6,6 +6,38 @@ from app.core.database import engine, Base
 from fastapi.responses import JSONResponse
 from fastapi import Request, HTTPException
 from app.exceptions import APIException
+import os
+from dotenv import load_dotenv
+import logging
+
+# 配置日志
+logger = logging.getLogger(__name__)
+
+# 加载环境变量
+def load_env():
+    """加载环境变量配置"""
+    # 获取环境变量文件路径
+    env_file = os.getenv("ENV_FILE", ".env")
+
+    # 尝试加载环境变量文件
+    if os.path.exists(env_file):
+        logger.info(f"正在加载环境变量文件: {env_file}")
+        load_dotenv(env_file)
+    else:
+        logger.warning(f"环境变量文件不存在: {env_file}，将使用系统环境变量")
+
+    # 验证必要的环境变量
+    required_env_vars = [
+        "OPENAI_API_KEY",
+        "OPENAI_API_BASE"
+    ]
+
+    missing_vars = [var for var in required_env_vars if not os.getenv(var)]
+    if missing_vars:
+        logger.warning(f"以下必要的环境变量未设置: {', '.join(missing_vars)}")
+
+# 加载环境变量
+load_env()
 
 # 创建数据库表
 Base.metadata.create_all(bind=engine)

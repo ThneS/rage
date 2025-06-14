@@ -79,14 +79,15 @@ export const uploadDocument = (file: File): AppThunk => async (dispatch: AppDisp
   }
 };
 
-export const processDocument = (documentId: number, config: any): AppThunk => async (dispatch: AppDispatch) => {
+export const processDocument = (documentId: number, config: any): AppThunk<Promise<void>> => async (dispatch: AppDispatch) => {
   try {
     dispatch(setLoading(true));
     const result = await documentService.processDocument(documentId, config);
     dispatch(setLoadResult(result));
-    dispatch(fetchDocuments()); // 刷新文档列表
+    await dispatch(fetchDocuments());
   } catch (error) {
     dispatch(setError(error instanceof Error ? error.message : '处理文档失败'));
+    throw error;
   } finally {
     dispatch(setLoading(false));
   }
@@ -115,6 +116,36 @@ export const fetchLoadConfig = (documentId: number): AppThunk => async (dispatch
   } finally {
     dispatch(setLoading(false));
   }
+};
+
+export const pollDocumentStatus = (documentId: number): AppThunk => async (dispatch: AppDispatch) => {
+  const pollInterval = 2000; // 每2秒轮询一次
+  const maxAttempts = 30; // 最多轮询30次（1分钟）
+  let attempts = 0;
+
+  const poll = async () => {
+    try {
+      const documents = await documentService.getDocuments();
+      const document = documents.find(doc => doc.id === documentId);
+
+      if (document) {
+        // 如果文档状态是处理中，继续轮询
+        if (document.status === 'processing' && attempts < maxAttempts) {
+          attempts++;
+          dispatch(setDocuments(documents));
+          setTimeout(poll, pollInterval);
+        } else {
+          // 状态已改变或达到最大尝试次数，更新文档列表
+          dispatch(setDocuments(documents));
+        }
+      }
+    } catch (error) {
+      console.error('轮询文档状态失败:', error);
+    }
+  };
+
+  // 开始轮询
+  poll();
 };
 
 export default documentSlice.reducer;

@@ -7,9 +7,12 @@ from enum import Enum
 class DocumentStatus(str, Enum):
     """文档状态枚举"""
     PENDING = "pending"      # 待处理
+    LOADING = "loading"      # 加载中
+    COMPLETED = "completed"  # 已加载
+    FAILED = "failed"        # 加载失败
     PROCESSING = "processing"  # 处理中
-    COMPLETED = "completed"  # 处理完成
-    FAILED = "failed"       # 处理失败
+    PROCESSED = "processed"    # 已处理
+    ERROR = "error"          # 错误
 
 class DocumentBase(BaseModel):
     """文档基础模型"""
@@ -73,20 +76,33 @@ class DocumentBase(BaseModel):
                     raise ValueError("创建时间格式无效")
         return v
 
+class LoadConfig(BaseModel):
+    """文档加载配置"""
+    config: Dict[str, Any] = Field(..., description="加载配置")
+    hash: str = Field(..., description="配置哈希值，用于快速比对")
+    created_at: datetime = Field(default_factory=datetime.now, description="配置创建时间")
+
+class LoadResult(BaseModel):
+    """文档加载结果"""
+    chunks: List[Dict[str, Any]] = Field(default_factory=list, description="文档分块结果")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="加载元数据")
+    error: Optional[str] = Field(None, description="错误信息")
+    created_at: datetime = Field(default_factory=datetime.now, description="结果创建时间")
+
 class Document(DocumentBase):
     """文档完整模型"""
-    id: int
-    file_path: str
-    status: DocumentStatus = Field(
-        default=DocumentStatus.PENDING,
-        description="文档处理状态"
-    )
-    created_at: datetime
-    updated_at: datetime
-    processed_at: Optional[datetime] = None
-    error_message: Optional[str] = None
+    id: int = Field(..., description="文档ID")
+    file_path: str = Field(..., description="文件路径")
+    status: DocumentStatus = Field(default=DocumentStatus.PENDING, description="文档状态")
+    load_config: Optional[LoadConfig] = Field(None, description="加载配置")
+    load_result: Optional[LoadResult] = Field(None, description="加载结果")
+    error_message: Optional[str] = Field(None, description="错误信息")
+    created_at: datetime = Field(..., description="创建时间")
+    updated_at: datetime = Field(..., description="更新时间")
+    processed_at: Optional[datetime] = Field(None, description="处理时间")
 
-    model_config = {"from_attributes": True}
+    class Config:
+        from_attributes = True
 
 class FileTypeConfigResponse(BaseModel):
     """文件类型配置响应"""

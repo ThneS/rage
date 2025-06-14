@@ -20,6 +20,8 @@ class Document(Base):
         index=True
     )
     doc_metadata = Column(JSON, nullable=True)
+    load_config = Column(JSON, nullable=True)  # 存储加载配置
+    load_result = Column(JSON, nullable=True)  # 存储加载结果
     error_message = Column(String(512), nullable=True)
 
     # 时间字段

@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, Body
 from sqlalchemy.orm import Session
 import json
@@ -8,7 +8,8 @@ from app.core.document_config import get_file_type_config
 from app.schemas.document import (
     Document,
     DocumentLoadConfig,
-    FileTypeConfigResponse
+    FileTypeConfigResponse,
+    DocumentStatus
 )
 from app.services.document_service import DocumentService
 from app.schemas.response import ResponseModel
@@ -156,7 +157,18 @@ async def get_load_config(
         # 获取文件类型配置
         try:
             logger.debug(f"正在获取文件类型配置: file_type={document.file_type}")
+            # 如果文档是已经加载过，则返回加载过的配置
             config = get_file_type_config(document.file_type)
+            if document.status == DocumentStatus.COMPLETED:
+                # 从document.load_config中获取配置信息
+                load_config_data = document.load_config
+                config = load_config_data.get("config", config)
+            # 将配置转换为 DocumentLoadConfig 对象
+            try:
+                config = DocumentLoadConfig.model_validate(config)
+            except Exception as e:
+                logger.error(f"配置转换失败: document_id={document_id}, error={str(e)}", exc_info=True)
+                config = config
             logger.debug(f"文件类型配置获取成功: file_type={document.file_type}")
         except ValueError as e:
             logger.warning(f"不支持的文件类型: document_id={document_id}, file_type={document.file_type}, error={str(e)}")

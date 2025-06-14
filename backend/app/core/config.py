@@ -1,6 +1,6 @@
 from typing import List, Optional
 from pydantic_settings import BaseSettings
-from pydantic import AnyHttpUrl, validator
+from pydantic import AnyHttpUrl, field_validator
 
 
 class Settings(BaseSettings):
@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     # CORS配置
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = ["http://localhost:5173"]  # 前端开发服务器
 
-    @validator("BACKEND_CORS_ORIGINS", pre=True)
+    @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     def assemble_cors_origins(cls, v: str | List[str]) -> List[str] | str:
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
@@ -20,10 +20,6 @@ class Settings(BaseSettings):
 
     # 文件上传配置
     UPLOAD_DIR: str = "uploads"
-    MAX_UPLOAD_SIZE: int = 50 * 1024 * 1024  # 50MB
-    ALLOWED_EXTENSIONS: List[str] = [
-        "pdf", "docx", "doc", "txt", "md", "csv", "xlsx", "xls", "html"
-    ]
 
     # 数据库配置
     SQLALCHEMY_DATABASE_URI: str = "sqlite:///./rag_tuning.db"
@@ -42,7 +38,6 @@ class Settings(BaseSettings):
     DEFAULT_CHUNK_OVERLAP: int = 200
     MAX_CHUNKS_PER_DOCUMENT: int = 1000
 
-    BACKEND_CORS_ORIGINS: List[str] = ["*"]
     class Config:
         case_sensitive = True
         env_file = ".env"
