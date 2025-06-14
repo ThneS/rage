@@ -3,6 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.v1.endpoints import documents
 from app.core.database import engine, Base
+from fastapi.responses import JSONResponse
+from fastapi import Request, HTTPException
+from app.exceptions import APIException
 
 # 创建数据库表
 Base.metadata.create_all(bind=engine)
@@ -28,7 +31,6 @@ app.include_router(
     tags=["documents"]
 )
 
-
 @app.get("/")
 async def root():
     return {
@@ -36,3 +38,25 @@ async def root():
         "docs_url": "/docs",
         "redoc_url": "/redoc"
     }
+
+@app.exception_handler(APIException)
+async def api_exception_handler(request: Request, exc: APIException):
+    return JSONResponse(
+        status_code=200,
+        content={
+            "code": exc.code,
+            "message": exc.message,
+            "data": None
+        }
+    )
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "code": exc.status_code,
+            "message": exc.detail,
+            "data": None
+        }
+    )

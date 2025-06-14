@@ -83,8 +83,7 @@ class Document(DocumentBase):
     processed_at: Optional[datetime] = None
     error_message: Optional[str] = None
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 
 # 文档处理配置模型
@@ -134,7 +133,7 @@ class DocumentLoadConfig(BaseModel):
     max_size: Optional[tuple[int, int]] = Field(default=None, description="最大尺寸(宽,高)")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "extract_text": True,
                 "extract_images": False,

@@ -11,6 +11,7 @@ from app.schemas.document import (
     FileTypeConfigResponse
 )
 from app.services.document_service import DocumentService
+from app.schemas.response import ResponseModel
 
 # 配置日志
 logger = logging.getLogger(__name__)
@@ -18,12 +19,12 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.post("/upload", response_model=Document)
+@router.post("/upload", response_model=ResponseModel[Document])
 async def upload_document(
     file: UploadFile = File(..., description="要上传的文件"),
     metadata: Optional[str] = Form(None, description="文档元数据，JSON格式字符串"),
     db: Session = Depends(get_db)
-) -> Document:
+) -> ResponseModel[Document]:
     """处理文档上传请求
 
     接受文件和元数据，返回创建的文档对象。
@@ -35,7 +36,7 @@ async def upload_document(
         db: 数据库会话
 
     Returns:
-        Document: 创建的文档对象
+        ResponseModel[Document]: 创建的文档对象
 
     Raises:
         HTTPException:
@@ -77,7 +78,9 @@ async def upload_document(
 
         # 创建文档
         service = DocumentService(db)
-        return await service.create_document(file, metadata_dict)
+        doc = await service.create_document(file, metadata_dict)
+        doc_pydantic = Document.model_validate(doc)
+        return ResponseModel[Document](data=doc_pydantic)
 
     except HTTPException:
         raise
@@ -88,7 +91,7 @@ async def upload_document(
         )
 
 
-@router.post("/{document_id}/parse", response_model=Document)
+@router.post("/{document_id}/parse", response_model=ResponseModel[Document])
 def process_document(
     document_id: int,
     config: DocumentLoadConfig,
@@ -96,25 +99,29 @@ def process_document(
 ):
     """处理文档（解析和分块）"""
     service = DocumentService(db)
-    return service.process_document(document_id, config)
+    doc = service.process_document(document_id, config)
+    doc_pydantic = Document.model_validate(doc)
+    return ResponseModel[Document](data=doc_pydantic)
 
 
 # 获取文档列表
-@router.get("/", response_model=List[Document])
+@router.get("/", response_model=ResponseModel[List[Document]])
 def get_documents(
     db: Session = Depends(get_db)
 ):
     """获取文档列表"""
     service = DocumentService(db)
-    return service.get_documents()
+    docs = service.get_documents()
+    docs_pydantic = [Document.model_validate(doc) for doc in docs]
+    return ResponseModel[List[Document]](data=docs_pydantic)
 
 # 根据document的文件后缀获取加载配置
 # 配置是一份json文件，每种文件后缀对应一份配置
-@router.get("/{document_id}/load-config", response_model=FileTypeConfigResponse)
+@router.get("/{document_id}/load-config", response_model=ResponseModel[FileTypeConfigResponse])
 async def get_load_config(
     document_id: int,
     db: Session = Depends(get_db)
-) -> FileTypeConfigResponse:
+) -> ResponseModel[FileTypeConfigResponse]:
     """获取文档加载配置
 
     根据文档的文件类型返回对应的加载配置，包括：
@@ -127,7 +134,7 @@ async def get_load_config(
         db: 数据库会话
 
     Returns:
-        FileTypeConfigResponse: 文件类型配置信息
+        ResponseModel[FileTypeConfigResponse]: 文件类型配置信息
 
     Raises:
         HTTPException:
@@ -191,7 +198,7 @@ async def get_load_config(
                 default_config=config.default_config
             )
             logger.info(f"成功生成配置响应: document_id={document_id}")
-            return response
+            return ResponseModel[FileTypeConfigResponse](data=response)
         except Exception as e:
             logger.error(f"生成配置响应失败: document_id={document_id}, error={str(e)}", exc_info=True)
             raise HTTPException(
