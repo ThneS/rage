@@ -51,7 +51,7 @@ PDF_FIELDS = [
             ConfigFieldOption(label="Unstructured", value="unstructured"),
             ConfigFieldOption(label="LlamaParse", value="llamaParse"),
         ],
-        group="加载工具"
+        group="基本设置"
     ),
     ConfigField(
         name="extract_text",
@@ -68,18 +68,6 @@ PDF_FIELDS = [
         description="是否提取文档中的图片",
         default=False,
         group="基本设置"
-    ),
-    ConfigField(
-        name="image_dpi",
-        label="图片分辨率",
-        type="number",
-        description="提取图片时的分辨率（DPI）",
-        default=300,
-        min=72,
-        max=600,
-        step=10,
-        group="基本设置",
-        dependencies={"field": "extract_images", "value": True}
     ),
     ConfigField(
         name="extract_tables",
@@ -110,16 +98,6 @@ PDF_FIELDS = [
         type="switch",
         description="是否自动合并跨页表格",
         default=False,
-        group="表格设置",
-        dependencies={"field": "extract_tables", "value": True}
-    ),
-    ConfigField(
-        name="table_area",
-        label="表格区域",
-        type="text",
-        description="指定表格区域（如Camelot支持），格式：x1,y1,x2,y2",
-        default=None,
-        placeholder="如：50,50,500,500",
         group="表格设置",
         dependencies={"field": "extract_tables", "value": True}
     ),
@@ -195,113 +173,6 @@ PDF_FIELDS = [
         default=None,
         placeholder="请输入PDF密码",
         group="安全设置"
-    ),
-    ConfigField(
-        name="extract_metadata",
-        label="提取元数据",
-        type="switch",
-        description="是否提取PDF元数据",
-        default=True,
-        group="高级设置"
-    ),
-    ConfigField(
-        name="structure_preserve",
-        label="结构保留",
-        type="switch",
-        description="是否保留PDF的父子层级结构",
-        default=True,
-        group="高级设置"
-    ),
-    ConfigField(
-        name="preserve_layout",
-        label="保留排版",
-        type="switch",
-        description="是否保留原始排版",
-        default=False,
-        group="高级设置"
-    ),
-    ConfigField(
-        name="text_cleaning",
-        label="文本清洗",
-        type="switch",
-        description="是否自动清洗文本（去除换行、空格等）",
-        default=True,
-        group="高级设置"
-    ),
-    ConfigField(
-        name="output_format",
-        label="输出格式",
-        type="select",
-        description="解析结果输出格式",
-        default="text",
-        options=[
-            ConfigFieldOption(label="纯文本", value="text"),
-            ConfigFieldOption(label="JSON", value="json"),
-            ConfigFieldOption(label="Markdown", value="markdown"),
-            ConfigFieldOption(label="HTML", value="html"),
-        ],
-        group="高级设置"
-    ),
-    # LangChain/大模型相关
-    ConfigField(
-        name="chunk_size",
-        label="分块大小",
-        type="number",
-        description="LangChain 分块时的块大小（字符数）",
-        default=1000,
-        min=100,
-        max=5000,
-        step=100,
-        group="大模型/分块",
-        dependencies={"field": "loader_tool", "value": "langchain"}
-    ),
-    ConfigField(
-        name="chunk_overlap",
-        label="分块重叠",
-        type="number",
-        description="LangChain 分块时的重叠字符数",
-        default=200,
-        min=0,
-        max=1000,
-        step=50,
-        group="大模型/分块",
-        dependencies={"field": "loader_tool", "value": "langchain"}
-    ),
-    ConfigField(
-        name="semantic_split",
-        label="语义分块",
-        type="switch",
-        description="是否使用语义分块",
-        default=False,
-        group="大模型/分块",
-        dependencies={"field": "loader_tool", "value": "langchain"}
-    ),
-    ConfigField(
-        name="llm_model",
-        label="大模型名称",
-        type="text",
-        description="指定用于分块/解析的大模型名称",
-        default="",
-        group="大模型/分块",
-        dependencies={"field": "loader_tool", "value": "langchain"}
-    ),
-    ConfigField(
-        name="prompt_template",
-        label="分块提示词模板",
-        type="textarea",
-        description="LangChain 分块时的提示词模板",
-        default="",
-        group="大模型/分块",
-        dependencies={"field": "loader_tool", "value": "langchain"}
-    ),
-    ConfigField(
-        name="embedding_model",
-        label="嵌入模型",
-        type="text",
-        description="指定用于语义分块的嵌入模型",
-        default="",
-        group="大模型/分块",
-        dependencies={"field": "semantic_split", "value": True}
     ),
 ]
 

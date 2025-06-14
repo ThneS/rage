@@ -90,18 +90,6 @@ async def upload_document(
             detail=f"上传文档失败: {str(e)}"
         )
 
-@router.post("/{document_id}/parse", response_model=ResponseModel[Document])
-def process_document(
-    document_id: int,
-    config: DocumentLoadConfig,
-    db: Session = Depends(get_db)
-):
-    """处理文档（解析和分块）"""
-    service = DocumentService(db)
-    doc = service.process_document(document_id, config)
-    doc_pydantic = Document.model_validate(doc)
-    return ResponseModel[Document](data=doc_pydantic)
-
 @router.get("/", response_model=ResponseModel[List[Document]])
 def get_documents(
     db: Session = Depends(get_db)
@@ -227,3 +215,15 @@ def delete_document(
     service = DocumentService(db)
     service.delete_document(document_id)
     return ResponseModel[Document](data=None)
+
+@router.post("/{document_id}/parse", response_model=ResponseModel[Document])
+def process_document(
+    document_id: int,
+    config: DocumentLoadConfig,
+    db: Session = Depends(get_db)
+):
+    """处理文档（解析和分块）"""
+    service = DocumentService(db)
+    doc = service.process_document(document_id, config)
+    doc_pydantic = Document.model_validate(doc)
+    return ResponseModel[Document](data=doc_pydantic)
