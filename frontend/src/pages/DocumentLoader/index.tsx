@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Row, Col, App } from 'antd';
-import DocumentList from '@/components/DocumentLoader/DocumentList';
-import LoadConfig from '@/components/DocumentLoader/LoadConfig';
-import type { Document } from '@/types/document';
+import DocumentList from '@/components/Document/DocumentList';
+import LoadConfig from '@/components/Document/LoadConfig';
+import type { Document, DocumentLoadConfig } from '@/types/document';
 import { documentService } from '@/services/documentService';
 
 const DocumentLoader: React.FC = () => {
@@ -14,12 +14,7 @@ const DocumentLoader: React.FC = () => {
     setSelectedDocument(document);
   };
 
-  const handleProcess = async (config: {
-    prompt: string;
-    model: string;
-    temperature: number;
-    maxTokens: number;
-  }) => {
+  const handleProcess = async (config: DocumentLoadConfig) => {
     if (!selectedDocument) {
       message.error('请先选择文档');
       return;

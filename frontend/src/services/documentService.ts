@@ -1,38 +1,44 @@
-import type { Document } from '@/types/document';
+import type { Document, DocumentLoadConfig, FileTypeConfigResponse } from '@/types/document';
 import { API_DOCUMENTS_URL } from '@/constants/api';
 import { get, del, upload, post } from '../utils/request';
 
 export class DocumentService {
-  async getDocuments(params?: { search?: string; status?: string }): Promise<Document[]> {
-    return get<Document[]>(API_DOCUMENTS_URL, params);
+  async getDocuments(): Promise<Document[]> {
+    try {
+      const response = await get<Document[]>(API_DOCUMENTS_URL);
+      return Array.isArray(response) ? response : [];
+    } catch (error) {
+      console.error('获取文档列表失败:', error);
+      return [];
+    }
   }
 
   async getDocument(id: number): Promise<Document> {
     return get<Document>(`${API_DOCUMENTS_URL}/${id}`);
   }
 
-  async uploadDocument(file: File): Promise<Document> {
-    return upload<Document>(`${API_DOCUMENTS_URL}/upload`, file);
+  async uploadDocument(file: File, metadata?: string): Promise<Document> {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (metadata) {
+      formData.append('metadata', metadata);
+    }
+    return upload<Document>(`${API_DOCUMENTS_URL}/upload`, formData);
   }
 
   async deleteDocument(id: number): Promise<void> {
     return del(`${API_DOCUMENTS_URL}/${id}`);
   }
 
-  getDownloadUrl(id: number): string {
-    return `${API_DOCUMENTS_URL}/${id}/download`;
-  }
-
   async processDocument(
     id: number,
-    config: {
-      prompt: string;
-      model: string;
-      temperature: number;
-      maxTokens: number;
-    }
+    config: DocumentLoadConfig
   ): Promise<Document> {
-    return post<Document>(`${API_DOCUMENTS_URL}/${id}/process`, config);
+    return post<Document>(`${API_DOCUMENTS_URL}/${id}/parse`, config);
+  }
+
+  async getLoadConfig(id: number): Promise<FileTypeConfigResponse> {
+    return get<FileTypeConfigResponse>(`${API_DOCUMENTS_URL}/${id}/load-config`);
   }
 }
 

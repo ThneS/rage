@@ -42,6 +42,7 @@ class Settings(BaseSettings):
     DEFAULT_CHUNK_OVERLAP: int = 200
     MAX_CHUNKS_PER_DOCUMENT: int = 1000
 
+    BACKEND_CORS_ORIGINS: List[str] = ["*"]
     class Config:
         case_sensitive = True
         env_file = ".env"
