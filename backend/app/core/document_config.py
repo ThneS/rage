@@ -38,6 +38,22 @@ class FileTypeConfig(BaseModel):
 # PDF配置字段
 PDF_FIELDS = [
     ConfigField(
+        name="loader_tool",
+        label="加载工具",
+        type="select",
+        description="选择用于解析PDF的工具链",
+        default="langchain",
+        options=[
+            ConfigFieldOption(label="LangChain", value="langchain"),
+            ConfigFieldOption(label="PyPDF", value="pypdf"),
+            ConfigFieldOption(label="pdfplumber", value="pdfplumber"),
+            ConfigFieldOption(label="PyMuPDF", value="pymupdf"),
+            ConfigFieldOption(label="Unstructured", value="unstructured"),
+            ConfigFieldOption(label="LlamaParse", value="llamaParse"),
+        ],
+        group="加载工具"
+    ),
+    ConfigField(
         name="extract_text",
         label="提取文本",
         type="switch",
@@ -54,12 +70,58 @@ PDF_FIELDS = [
         group="基本设置"
     ),
     ConfigField(
+        name="image_dpi",
+        label="图片分辨率",
+        type="number",
+        description="提取图片时的分辨率（DPI）",
+        default=300,
+        min=72,
+        max=600,
+        step=10,
+        group="基本设置",
+        dependencies={"field": "extract_images", "value": True}
+    ),
+    ConfigField(
         name="extract_tables",
         label="提取表格",
         type="switch",
         description="是否提取文档中的表格",
         default=True,
-        group="基本设置"
+        group="表格设置"
+    ),
+    ConfigField(
+        name="table_tool",
+        label="表格解析工具",
+        type="select",
+        description="选择用于表格解析的工具",
+        default="camelot",
+        options=[
+            ConfigFieldOption(label="Camelot", value="camelot"),
+            ConfigFieldOption(label="Tabula", value="tabula"),
+            ConfigFieldOption(label="Unstructured", value="unstructured"),
+            ConfigFieldOption(label="LlamaParse", value="llamaParse"),
+        ],
+        group="表格设置",
+        dependencies={"field": "extract_tables", "value": True}
+    ),
+    ConfigField(
+        name="merge_tables",
+        label="合并跨页表格",
+        type="switch",
+        description="是否自动合并跨页表格",
+        default=False,
+        group="表格设置",
+        dependencies={"field": "extract_tables", "value": True}
+    ),
+    ConfigField(
+        name="table_area",
+        label="表格区域",
+        type="text",
+        description="指定表格区域（如Camelot支持），格式：x1,y1,x2,y2",
+        default=None,
+        placeholder="如：50,50,500,500",
+        group="表格设置",
+        dependencies={"field": "extract_tables", "value": True}
     ),
     ConfigField(
         name="ocr_enabled",
@@ -70,18 +132,43 @@ PDF_FIELDS = [
         group="OCR设置"
     ),
     ConfigField(
+        name="ocr_engine",
+        label="OCR引擎",
+        type="select",
+        description="选择OCR引擎",
+        default="pytesseract",
+        options=[
+            ConfigFieldOption(label="Tesseract", value="pytesseract"),
+            ConfigFieldOption(label="EasyOCR", value="easyocr"),
+        ],
+        group="OCR设置",
+        dependencies={"field": "ocr_enabled", "value": True}
+    ),
+    ConfigField(
         name="ocr_language",
         label="OCR语言",
         type="select",
         description="OCR识别的语言",
         default="chi_sim+eng",
         options=[
-            ConfigFieldOption(label="中文简体", value="chi_sim", description="简体中文"),
-            ConfigFieldOption(label="英文", value="eng", description="英语"),
-            ConfigFieldOption(label="中文简体+英文", value="chi_sim+eng", description="简体中文和英语"),
+            ConfigFieldOption(label="中文简体", value="chi_sim"),
+            ConfigFieldOption(label="英文", value="eng"),
+            ConfigFieldOption(label="中英混合", value="chi_sim+eng"),
         ],
         dependencies={"field": "ocr_enabled", "value": True},
         group="OCR设置"
+    ),
+    ConfigField(
+        name="ocr_threshold",
+        label="OCR二值化阈值",
+        type="number",
+        description="OCR前图片二值化阈值",
+        default=128,
+        min=0,
+        max=255,
+        step=1,
+        group="OCR设置",
+        dependencies={"field": "ocr_enabled", "value": True}
     ),
     ConfigField(
         name="page_range",
@@ -93,6 +180,14 @@ PDF_FIELDS = [
         group="页面设置"
     ),
     ConfigField(
+        name="split_by_page",
+        label="按页分割",
+        type="switch",
+        description="是否按页分割文档",
+        default=False,
+        group="页面设置"
+    ),
+    ConfigField(
         name="password",
         label="文档密码",
         type="text",
@@ -100,7 +195,114 @@ PDF_FIELDS = [
         default=None,
         placeholder="请输入PDF密码",
         group="安全设置"
-    )
+    ),
+    ConfigField(
+        name="extract_metadata",
+        label="提取元数据",
+        type="switch",
+        description="是否提取PDF元数据",
+        default=True,
+        group="高级设置"
+    ),
+    ConfigField(
+        name="structure_preserve",
+        label="结构保留",
+        type="switch",
+        description="是否保留PDF的父子层级结构",
+        default=True,
+        group="高级设置"
+    ),
+    ConfigField(
+        name="preserve_layout",
+        label="保留排版",
+        type="switch",
+        description="是否保留原始排版",
+        default=False,
+        group="高级设置"
+    ),
+    ConfigField(
+        name="text_cleaning",
+        label="文本清洗",
+        type="switch",
+        description="是否自动清洗文本（去除换行、空格等）",
+        default=True,
+        group="高级设置"
+    ),
+    ConfigField(
+        name="output_format",
+        label="输出格式",
+        type="select",
+        description="解析结果输出格式",
+        default="text",
+        options=[
+            ConfigFieldOption(label="纯文本", value="text"),
+            ConfigFieldOption(label="JSON", value="json"),
+            ConfigFieldOption(label="Markdown", value="markdown"),
+            ConfigFieldOption(label="HTML", value="html"),
+        ],
+        group="高级设置"
+    ),
+    # LangChain/大模型相关
+    ConfigField(
+        name="chunk_size",
+        label="分块大小",
+        type="number",
+        description="LangChain 分块时的块大小（字符数）",
+        default=1000,
+        min=100,
+        max=5000,
+        step=100,
+        group="大模型/分块",
+        dependencies={"field": "loader_tool", "value": "langchain"}
+    ),
+    ConfigField(
+        name="chunk_overlap",
+        label="分块重叠",
+        type="number",
+        description="LangChain 分块时的重叠字符数",
+        default=200,
+        min=0,
+        max=1000,
+        step=50,
+        group="大模型/分块",
+        dependencies={"field": "loader_tool", "value": "langchain"}
+    ),
+    ConfigField(
+        name="semantic_split",
+        label="语义分块",
+        type="switch",
+        description="是否使用语义分块",
+        default=False,
+        group="大模型/分块",
+        dependencies={"field": "loader_tool", "value": "langchain"}
+    ),
+    ConfigField(
+        name="llm_model",
+        label="大模型名称",
+        type="text",
+        description="指定用于分块/解析的大模型名称",
+        default="",
+        group="大模型/分块",
+        dependencies={"field": "loader_tool", "value": "langchain"}
+    ),
+    ConfigField(
+        name="prompt_template",
+        label="分块提示词模板",
+        type="textarea",
+        description="LangChain 分块时的提示词模板",
+        default="",
+        group="大模型/分块",
+        dependencies={"field": "loader_tool", "value": "langchain"}
+    ),
+    ConfigField(
+        name="embedding_model",
+        label="嵌入模型",
+        type="text",
+        description="指定用于语义分块的嵌入模型",
+        default="",
+        group="大模型/分块",
+        dependencies={"field": "semantic_split", "value": True}
+    ),
 ]
 
 # Word配置字段
@@ -305,7 +507,7 @@ IMAGE_FIELDS = [
 # 具体文件类型配置
 PDF_CONFIG = FileTypeConfig(
     name="PDF文档",
-    description="支持PDF格式文档的加载和处理",
+    description="支持PDF格式文档的加载和处理，支持多种工具链（LangChain、PyPDF、pdfplumber、PyMuPDF、Unstructured、LlamaParse）及OCR、表格解析等高级功能。",
     allowed_extensions=["pdf"],
     icon="file-pdf",
     fields=PDF_FIELDS,

@@ -90,7 +90,6 @@ async def upload_document(
             detail=f"上传文档失败: {str(e)}"
         )
 
-
 @router.post("/{document_id}/parse", response_model=ResponseModel[Document])
 def process_document(
     document_id: int,
@@ -103,8 +102,6 @@ def process_document(
     doc_pydantic = Document.model_validate(doc)
     return ResponseModel[Document](data=doc_pydantic)
 
-
-# 获取文档列表
 @router.get("/", response_model=ResponseModel[List[Document]])
 def get_documents(
     db: Session = Depends(get_db)
@@ -115,8 +112,6 @@ def get_documents(
     docs_pydantic = [Document.model_validate(doc) for doc in docs]
     return ResponseModel[List[Document]](data=docs_pydantic)
 
-# 根据document的文件后缀获取加载配置
-# 配置是一份json文件，每种文件后缀对应一份配置
 @router.get("/{document_id}/load-config", response_model=ResponseModel[FileTypeConfigResponse])
 async def get_load_config(
     document_id: int,
@@ -221,3 +216,14 @@ async def get_load_config(
             status_code=500,
             detail=f"获取配置失败: {str(e)}"
         )
+
+# delete 接口
+@router.delete("/{document_id}", response_model=ResponseModel[Document])
+def delete_document(
+    document_id: int,
+    db: Session = Depends(get_db)
+):
+    """删除文档"""
+    service = DocumentService(db)
+    service.delete_document(document_id)
+    return ResponseModel[Document](data=None)

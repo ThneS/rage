@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.document_config import get_file_type_config, get_default_load_config
 from app.models.document import Document
-from app.utils.file import save_upload_file, get_file_extension
+from app.utils.file import save_upload_file, get_file_extension, delete_file
 from app.schemas.document import DocumentLoadConfig
 
 # 配置日志
@@ -214,4 +214,22 @@ class DocumentService:
             raise HTTPException(
                 status_code=500,
                 detail=f"获取加载配置失败: {str(e)}"
+            )
+
+    def delete_document(self, document_id: int) -> None:
+        """删除文档"""
+        try:
+            document = self.get_document(document_id)
+            if not document:
+                raise HTTPException(status_code=404, detail="文档不存在")
+            self.db.delete(document)
+            self.db.commit()
+            # upload文件夹下的文档删除
+            delete_file(document.file_path)
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"删除文档失败: {str(e)}"
             )
