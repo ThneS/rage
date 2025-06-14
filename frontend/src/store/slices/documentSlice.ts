@@ -2,14 +2,14 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { AppThunk } from '../types';
 import { documentService } from '../../services/documentService';
-import type { Document, FileTypeConfigResponse, DocumentLoadConfig } from '../../types/document';
+import type { Document, FileTypeConfigResponse, LangChainDocument } from '../../types/document';
 import type { AppDispatch } from '../types';
 
 interface DocumentState {
   documents: Document[];
   currentDocument: Document | null;
   config: FileTypeConfigResponse | null;
-  loadResult: any;
+  loadResult: LangChainDocument[] | null;
   loading: boolean;
   error: string | null;
 }
@@ -45,7 +45,7 @@ const documentSlice = createSlice({
       state.config = action.payload;
       state.error = null;
     },
-    setLoadResult: (state, action: PayloadAction<any>) => {
+    setLoadResult: (state, action: PayloadAction<LangChainDocument[] | null>) => {
       state.loadResult = action.payload;
     },
   },
@@ -79,12 +79,11 @@ export const uploadDocument = (file: File): AppThunk => async (dispatch: AppDisp
   }
 };
 
-export const processDocument = (documentId: number, config: DocumentLoadConfig): AppThunk => async (dispatch: AppDispatch) => {
+export const processDocument = (documentId: number, config: any): AppThunk => async (dispatch: AppDispatch) => {
   try {
     dispatch(setLoading(true));
-    const document = await documentService.processDocument(documentId, config);
-    dispatch(setCurrentDocument(document));
-    dispatch(setLoadResult(document));
+    const result = await documentService.processDocument(documentId, config);
+    dispatch(setLoadResult(result));
     dispatch(fetchDocuments()); // 刷新文档列表
   } catch (error) {
     dispatch(setError(error instanceof Error ? error.message : '处理文档失败'));

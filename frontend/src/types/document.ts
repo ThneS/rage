@@ -51,3 +51,13 @@ export interface FileTypeConfigResponse {
 export interface DocumentLoadConfig extends FileTypeConfigResponse {
   [key: string]: any;  // 允许动态配置项
 }
+
+export interface LangChainDocument {
+  page_content: string;  // 文档内容
+  metadata: {
+    source?: string;     // 文档来源
+    page?: number;       // 页码（如果有）
+    chunk_id?: string;   // 分块ID
+    [key: string]: any;  // 其他元数据
+  };
+}

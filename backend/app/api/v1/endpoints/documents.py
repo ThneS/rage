@@ -12,7 +12,7 @@ from app.schemas.document import (
 )
 from app.services.document_service import DocumentService
 from app.schemas.response import ResponseModel
-
+from app.schemas.document import LangChainDocument
 # 配置日志
 logger = logging.getLogger(__name__)
 
@@ -217,7 +217,7 @@ def delete_document(
     service.delete_document(document_id)
     return ResponseModel[Document](data=None)
 
-@router.post("/{document_id}/parse", response_model=ResponseModel[Document])
+@router.post("/{document_id}/parse", response_model=ResponseModel[List[LangChainDocument]])
 def process_document(
     document_id: int,
     config: DocumentLoadConfig = Body(..., description="加载配置参数"),
@@ -240,5 +240,4 @@ def process_document(
         )
 
     doc = service.parse_document(document=document, config=config)
-    doc_pydantic = Document.model_validate(doc)
-    return ResponseModel[Document](data=doc_pydantic)
+    return ResponseModel[List[LangChainDocument]](data=doc)

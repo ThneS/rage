@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Row, Col, Modal } from 'antd';
+import { Row, Col } from 'antd';
 import DocumentList from '@/components/Document/DocumentList';
 import LoadConfig from '@/components/Document/LoadConfig';
 import { useAppSelector } from '@/store';
-import type { Document } from '@/types/document';
+import type { Document, LangChainDocument } from '@/types/document';
+import LoadResult from '@/components/Document/LoadConfig/LoadResult';
 
 const DocumentLoader: React.FC = () => {
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
-  const loadResult = useAppSelector(state => state.document.loadResult);
+  const loadResult = useAppSelector(state => state.document.loadResult) as LangChainDocument[] | null;
   const [modalVisible, setModalVisible] = useState(false);
 
   // 选中文档时，LoadConfig 会自动请求 load-config 并渲染
@@ -43,17 +44,11 @@ const DocumentLoader: React.FC = () => {
           />
         </Col>
       </Row>
-      <Modal
+      <LoadResult
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
-        footer={null}
-        width={800}
-        title="加载结果"
-      >
-        <pre style={{ maxHeight: 500, overflow: 'auto' }}>
-          {loadResult ? JSON.stringify(loadResult, null, 2) : '暂无结果'}
-        </pre>
-      </Modal>
+        loadResult={loadResult}
+      />
     </div>
   );
 };

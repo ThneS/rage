@@ -1,17 +1,16 @@
-from typing import Dict, Any
-from app.schemas.document import DocumentLoadConfig
-
-from langchain_core.documents import Document
+from typing import List
+from app.schemas.document import DocumentLoadConfig, LangChainDocument
 from langchain_community.document_loaders import (
     PyPDFLoader,
 )
 
 class LangchainParser:
-    def parse_pdf(file_path: str, config_dict: DocumentLoadConfig):
+    def parse(self, file_path: str, config: DocumentLoadConfig)-> List[LangChainDocument]:
         # 根据config_dict判断使用哪个loader
-        if config_dict.get('extract_images'):
+        loader_tool = config.get("loader_tool", "langchain")
+        if loader_tool == "langchain":
             loader = PyPDFLoader(file_path)
+            documents = loader.load()
+            return [LangChainDocument(page_content=doc.page_content, metadata=doc.metadata) for doc in documents]
         else:
-            loader = PyPDFLoader(file_path)
-        documents = loader.load()
-        return "\n".join(doc.page_content for doc in documents)
+            raise ValueError(f"不支持的加载工具: {loader_tool}")

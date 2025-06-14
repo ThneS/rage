@@ -4,7 +4,6 @@ from pydantic import BaseModel, Field, field_validator
 from app.core.document_config import ConfigField, ConfigFieldOption
 from enum import Enum
 
-
 class DocumentStatus(str, Enum):
     """文档状态枚举"""
     PENDING = "pending"      # 待处理
@@ -132,4 +131,16 @@ class FileTypeConfigResponse(BaseModel):
         return filtered_fields
 
 class DocumentLoadConfig(FileTypeConfigResponse):
-    pass
+    def get(self, key: str, default: Any = None) -> Any:
+        return self.default_config.get(key, default)
+
+class LangChainDocument(BaseModel):
+    """LangChain文档模型
+
+    用于表示文档的基本结构，包含页面内容和元数据。
+    参考自 langchain.schema.Document
+    """
+    page_content: str = Field(..., description="文档的主要内容")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="文档的元数据信息")
+
+    model_config = {"from_attributes": True}

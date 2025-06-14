@@ -3,12 +3,11 @@ import logging
 from typing import Optional, Dict, Any, List
 from fastapi import UploadFile, HTTPException
 from sqlalchemy.orm import Session
-from app.core.config import settings
 from app.core.document_config import get_file_type_config, get_default_load_config
 from app.models.document import Document
 from app.utils.file import save_upload_file, get_file_extension, delete_file
-from app.schemas.document import DocumentLoadConfig
-from app.services.parsers import langchain_parser, llamaindex_parser
+from app.schemas.document import DocumentLoadConfig, LangChainDocument
+from app.services.parsers import LangchainParser, LlamaIndexParser
 
 # 配置日志
 logger = logging.getLogger(__name__)
@@ -158,7 +157,7 @@ class DocumentService:
         self,
         document: Document,
         config: DocumentLoadConfig
-    ) -> Document:
+    ) -> List[LangChainDocument]:
         """处理文档
 
         Args:
@@ -177,27 +176,25 @@ class DocumentService:
 
             if file_type != "pdf":
                 raise HTTPException(status_code=400, detail="仅支持PDF文档处理")
-
-            # 根据 config里面的的group_order过滤fields，选择可用的字段，在读取的取值
-
-            loader_tool = getattr(config, 'loader_tool', None) or (hasattr(config, 'dict') and config.dict().get('loader_tool')) or 'langchain'
-            # config 可能是 Pydantic 对象，转为 dict
-            config_dict = config.model_dump() if hasattr(config, 'dict') else dict(config)
-
-            parse_result = None
+            loader_tool = config.get("loader_tool", "langchain")
+            parse_result: List[LangChainDocument] = []
+            parser = None
             if loader_tool == "langchain":
-                parse_result = langchain_parser.parse_pdf(file_path, config_dict)
+                parser = LangchainParser()
             elif loader_tool == "llamaindex":
-                parse_result = llamaindex_parser.parse_pdf(file_path, config_dict)
+                parser = LlamaIndexParser()
             else:
                 raise HTTPException(status_code=400, detail=f"不支持的加载工具: {loader_tool}")
-
+            try:
+                parse_result = parser.parse(file_path, config)
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"处理文档失败: {str(e)}")
             # 存入 doc_metadata
             document.doc_metadata = document.doc_metadata or {}
             document.doc_metadata["parse_result"] = parse_result
             self.db.commit()
             self.db.refresh(document)
-            return document
+            return parse_result
 
         except HTTPException:
             raise
