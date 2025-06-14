@@ -34,6 +34,7 @@ class FileTypeConfig(BaseModel):
     icon: Optional[str] = Field(None, description="文件类型图标")
     fields: List[ConfigField] = Field(..., description="配置字段列表")
     default_config: Dict[str, Any] = Field(..., description="默认配置值")
+    group_order: List[str] = Field(..., description="分组展示顺序")
 
 # PDF配置字段
 PDF_FIELDS = [
@@ -53,35 +54,46 @@ PDF_FIELDS = [
         ],
         group="基本设置"
     ),
+    # pypdf
     ConfigField(
         name="extract_text",
         label="提取文本",
         type="switch",
-        description="是否提取文档中的文本内容",
         default=True,
-        group="基本设置"
+        group="基本设置",
+        dependencies={"field": "loader_tool", "value": ["pypdf", "pdfplumber", "langchain"]}
     ),
     ConfigField(
-        name="extract_images",
-        label="提取图片",
-        type="switch",
-        description="是否提取文档中的图片",
-        default=False,
-        group="基本设置"
+        name="page_range",
+        label="页码范围",
+        type="text",
+        default="all",
+        placeholder="all 或 1-5,7,9-12",
+        group="页面设置",
+        dependencies={"field": "loader_tool", "value": ["pypdf", "pdfplumber", "langchain"]}
     ),
+    ConfigField(
+        name="password",
+        label="文档密码",
+        type="text",
+        default=None,
+        placeholder="请输入PDF密码",
+        group="安全设置",
+        dependencies={"field": "loader_tool", "value": ["pypdf", "pdfplumber", "langchain"]}
+    ),
+    # pdfplumber
     ConfigField(
         name="extract_tables",
         label="提取表格",
         type="switch",
-        description="是否提取文档中的表格",
         default=True,
-        group="表格设置"
+        group="表格设置",
+        dependencies={"field": "loader_tool", "value": ["pdfplumber", "langchain"]}
     ),
     ConfigField(
         name="table_tool",
         label="表格解析工具",
         type="select",
-        description="选择用于表格解析的工具",
         default="camelot",
         options=[
             ConfigFieldOption(label="Camelot", value="camelot"),
@@ -90,43 +102,95 @@ PDF_FIELDS = [
             ConfigFieldOption(label="LlamaParse", value="llamaParse"),
         ],
         group="表格设置",
-        dependencies={"field": "extract_tables", "value": True}
+        dependencies={"field": "loader_tool", "value": ["pdfplumber", "langchain"]}
     ),
     ConfigField(
         name="merge_tables",
         label="合并跨页表格",
         type="switch",
-        description="是否自动合并跨页表格",
         default=False,
         group="表格设置",
-        dependencies={"field": "extract_tables", "value": True}
+        dependencies={"field": "loader_tool", "value": ["pdfplumber", "langchain"]}
+    ),
+    # langchain
+    ConfigField(
+        name="chunk_size",
+        label="分块大小",
+        type="number",
+        default=1000,
+        min=100,
+        max=5000,
+        step=100,
+        group="大模型/分块",
+        dependencies={"field": "loader_tool", "value": "langchain"}
+    ),
+    ConfigField(
+        name="chunk_overlap",
+        label="分块重叠",
+        type="number",
+        default=200,
+        min=0,
+        max=1000,
+        step=50,
+        group="大模型/分块",
+        dependencies={"field": "loader_tool", "value": "langchain"}
+    ),
+    ConfigField(
+        name="semantic_split",
+        label="语义分块",
+        type="switch",
+        default=False,
+        group="大模型/分块",
+        dependencies={"field": "loader_tool", "value": "langchain"}
+    ),
+    ConfigField(
+        name="llm_model",
+        label="大模型名称",
+        type="text",
+        default="",
+        group="大模型/分块",
+        dependencies={"field": "loader_tool", "value": "langchain"}
+    ),
+    ConfigField(
+        name="prompt_template",
+        label="分块提示词模板",
+        type="textarea",
+        default="",
+        group="大模型/分块",
+        dependencies={"field": "loader_tool", "value": "langchain"}
+    ),
+    ConfigField(
+        name="embedding_model",
+        label="嵌入模型",
+        type="text",
+        default="",
+        group="大模型/分块",
+        dependencies={"field": "semantic_split", "value": True}
     ),
     ConfigField(
         name="ocr_enabled",
         label="启用OCR",
         type="switch",
-        description="是否启用OCR识别图片中的文字",
         default=False,
-        group="OCR设置"
+        group="OCR设置",
+        dependencies={"field": "loader_tool", "value": "langchain"}
     ),
     ConfigField(
         name="ocr_engine",
         label="OCR引擎",
         type="select",
-        description="选择OCR引擎",
         default="pytesseract",
         options=[
             ConfigFieldOption(label="Tesseract", value="pytesseract"),
             ConfigFieldOption(label="EasyOCR", value="easyocr"),
         ],
         group="OCR设置",
-        dependencies={"field": "ocr_enabled", "value": True}
+        dependencies={"field": "loader_tool", "value": "langchain"}
     ),
     ConfigField(
         name="ocr_language",
         label="OCR语言",
         type="select",
-        description="OCR识别的语言",
         default="chi_sim+eng",
         options=[
             ConfigFieldOption(label="中文简体", value="chi_sim"),
@@ -140,7 +204,6 @@ PDF_FIELDS = [
         name="ocr_threshold",
         label="OCR二值化阈值",
         type="number",
-        description="OCR前图片二值化阈值",
         default=128,
         min=0,
         max=255,
@@ -149,13 +212,36 @@ PDF_FIELDS = [
         dependencies={"field": "ocr_enabled", "value": True}
     ),
     ConfigField(
-        name="page_range",
-        label="页码范围",
-        type="text",
-        description="要处理的页码范围，例如：1-5,7,9-12",
-        default="all",
-        placeholder="all 或 1-5,7,9-12",
-        group="页面设置"
+        name="extract_images",
+        label="提取图片",
+        type="switch",
+        description="是否提取文档中的图片",
+        default=False,
+        group="基本设置"
+    ),
+    ConfigField(
+        name="extract_headers",
+        label="提取页眉",
+        type="switch",
+        description="是否提取文档的页眉",
+        default=True,
+        group="格式设置"
+    ),
+    ConfigField(
+        name="extract_footers",
+        label="提取页脚",
+        type="switch",
+        description="是否提取文档的页脚",
+        default=True,
+        group="格式设置"
+    ),
+    ConfigField(
+        name="extract_comments",
+        label="提取批注",
+        type="switch",
+        description="是否提取文档中的批注",
+        default=False,
+        group="格式设置"
     ),
     ConfigField(
         name="split_by_page",
@@ -164,15 +250,6 @@ PDF_FIELDS = [
         description="是否按页分割文档",
         default=False,
         group="页面设置"
-    ),
-    ConfigField(
-        name="password",
-        label="文档密码",
-        type="text",
-        description="PDF文档的密码（如果有）",
-        default=None,
-        placeholder="请输入PDF密码",
-        group="安全设置"
     ),
 ]
 
@@ -382,7 +459,17 @@ PDF_CONFIG = FileTypeConfig(
     allowed_extensions=["pdf"],
     icon="file-pdf",
     fields=PDF_FIELDS,
-    default_config={field.name: field.default for field in PDF_FIELDS}
+    default_config={field.name: field.default for field in PDF_FIELDS},
+    group_order=[
+        "基本设置",
+        "页面设置",
+        "表格设置",
+        # "大模型/分块",
+        "OCR设置",
+        "格式设置",
+        "安全设置",
+        "其他设置"
+    ]
 )
 
 WORD_CONFIG = FileTypeConfig(
@@ -391,7 +478,12 @@ WORD_CONFIG = FileTypeConfig(
     allowed_extensions=["docx"],
     icon="file-word",
     fields=WORD_FIELDS,
-    default_config={field.name: field.default for field in WORD_FIELDS}
+    default_config={field.name: field.default for field in WORD_FIELDS},
+    group_order=[
+        "基本设置",
+        "格式设置",
+        "其他设置"
+    ]
 )
 
 EXCEL_CONFIG = FileTypeConfig(
@@ -400,7 +492,13 @@ EXCEL_CONFIG = FileTypeConfig(
     allowed_extensions=["xlsx"],
     icon="file-excel",
     fields=EXCEL_FIELDS,
-    default_config={field.name: field.default for field in EXCEL_FIELDS}
+    default_config={field.name: field.default for field in EXCEL_FIELDS},
+    group_order=[
+        "基本设置",
+        "内容设置",
+        "表格设置",
+        "其他设置"
+    ]
 )
 
 CSV_CONFIG = FileTypeConfig(
@@ -409,7 +507,12 @@ CSV_CONFIG = FileTypeConfig(
     allowed_extensions=["csv"],
     icon="file-csv",
     fields=CSV_FIELDS,
-    default_config={field.name: field.default for field in CSV_FIELDS}
+    default_config={field.name: field.default for field in CSV_FIELDS},
+    group_order=[
+        "基本设置",
+        "表格设置",
+        "其他设置"
+    ]
 )
 
 IMAGE_CONFIG = FileTypeConfig(
@@ -418,7 +521,13 @@ IMAGE_CONFIG = FileTypeConfig(
     allowed_extensions=["jpg", "jpeg", "png"],
     icon="file-image",
     fields=IMAGE_FIELDS,
-    default_config={field.name: field.default for field in IMAGE_FIELDS}
+    default_config={field.name: field.default for field in IMAGE_FIELDS},
+    group_order=[
+        "基本设置",
+        "OCR设置",
+        "图片处理",
+        "其他设置"
+    ]
 )
 
 # 文件类型配置映射

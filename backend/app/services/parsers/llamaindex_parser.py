@@ -1,6 +1,3 @@
-from typing import Dict, Any
-from llama_index import SimpleDirectoryReader, Document as LlamaDocument
-
 class LlamaIndexParser:
     def parse(
         self,
@@ -10,6 +7,5 @@ class LlamaIndexParser:
         enable_image_analysis: bool = False,
         remove_headers_footers: bool = False
     ) -> str:
-        reader = SimpleDirectoryReader(input_files=[file_path])
-        documents = reader.load_data()
-        return "\n".join(doc.text for doc in documents)
+
+        return "demo"

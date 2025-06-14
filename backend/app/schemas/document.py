@@ -186,3 +186,4 @@ class FileTypeConfigResponse(BaseModel):
     icon: Optional[str] = Field(None, description="文件类型图标")
     fields: List[ConfigField] = Field(..., description="配置字段列表")
     default_config: Dict[str, Any] = Field(..., description="默认配置值")
+    group_order: List[str] = Field(..., description="分组展示顺序")

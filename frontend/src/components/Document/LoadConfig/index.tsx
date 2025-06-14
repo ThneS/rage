@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   Card,
   Form,
@@ -9,14 +9,13 @@ import {
   App,
   Switch,
   InputNumber,
-  Divider,
   Typography,
   Tooltip,
   Radio,
   Tabs,
 } from 'antd';
 import type { Document } from '@/types/document';
-import type { FileTypeConfigResponse } from '@/types/document';
+import type { FileTypeConfigResponse, ConfigField } from '@/types/document';
 import { documentService } from '@/services/documentService';
 
 const { Option } = Select;
@@ -30,24 +29,21 @@ interface LoadConfigProps {
   loadResult?: any;
 }
 
-interface FormField {
-  name: string;
-  label: string;
-  type: 'switch' | 'select' | 'radio' | 'number' | 'text' | 'textarea' | 'range';
-  description?: string;
-  default: any;
-  required: boolean;
-  options?: Array<{label: string; value: any; description?: string}>;
-  min?: number;
-  max?: number;
-  step?: number;
-  placeholder?: string;
-  rows?: number;
-  disabled: boolean;
-  hidden: boolean;
-  group?: string;
-  dependencies?: Record<string, any>;
-}
+// 检查字段是否应该显示
+const shouldShowField = (field: ConfigField, formValues: Record<string, any>): boolean => {
+  if (!field.dependencies) return true;
+
+  const { field: depField, value: depValue } = field.dependencies;
+  const currentValue = formValues[depField];
+
+  // 如果依赖值是数组，检查当前值是否在数组中
+  if (Array.isArray(depValue)) {
+    return depValue.includes(currentValue);
+  }
+
+  // 否则直接比较值
+  return currentValue === depValue;
+};
 
 const LoadConfig: React.FC<LoadConfigProps> = ({
   selectedDocument,
@@ -60,13 +56,16 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
   const { message } = App.useApp();
   const [config, setConfig] = useState<FileTypeConfigResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [formValues, setFormValues] = useState<Record<string, any>>({});
+  const [initialValues, setInitialValues] = useState<Record<string, any>>({});
 
   // 获取文档加载配置
   useEffect(() => {
     const fetchConfig = async () => {
       if (!selectedDocument) {
         setConfig(null);
-        form.resetFields();
+        setInitialValues({});
+        setFormValues({});
         return;
       }
 
@@ -74,7 +73,9 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
         setLoading(true);
         const response = await documentService.getLoadConfig(selectedDocument.id);
         setConfig(response);
-        form.setFieldsValue(response.default_config);
+        const defaultValues = response.default_config;
+        setInitialValues(defaultValues);
+        setFormValues(defaultValues);
       } catch (error) {
         message.error('获取文档配置失败');
       } finally {
@@ -83,7 +84,12 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
     };
 
     fetchConfig();
-  }, [selectedDocument, form, message]);
+  }, [selectedDocument, message]);
+
+  // 监听表单值变化
+  const handleValuesChange = (_: any, allValues: Record<string, any>) => {
+    setFormValues(allValues);
+  };
 
   const handleSubmit = async (values: any) => {
     try {
@@ -94,7 +100,7 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
   };
 
   // 根据字段类型渲染表单项
-  const renderFormItem = (field: FormField) => {
+  const renderFormItem = (field: ConfigField) => {
     const commonProps = {
       disabled: field.disabled || processing || !selectedDocument,
       placeholder: field.placeholder,
@@ -162,56 +168,52 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
     }
   };
 
-  // 按组渲染表单项（Tabs 方式）
-  const renderFormGroups = () => {
-    if (!config) return null;
+  // 使用 useMemo 优化分组渲染
+  const formGroups = useMemo(() => {
+    if (!config?.group_order) return [];
 
-    const groups = config.fields.reduce((acc, field) => {
-      const group = field.group || '其他设置';
-      if (!acc[group]) acc[group] = [];
-      acc[group].push({
-        ...field,
-        required: !!field.required,
-        disabled: !!field.disabled,
-        hidden: !!field.hidden,
-      });
-      return acc;
-    }, {} as Record<string, FormField[]>);
+    // 使用配置中指定的分组顺序
+    const orderedGroups = config.group_order;
 
-    return (
-      <Tabs
-        tabPosition="top"
-        style={{ height: '100%' }}
-        items={Object.entries(groups).map(([groupName, fields]) => ({
-          key: groupName,
-          label: groupName,
-          children: (
-            <div className="space-y-4">
-              {fields.map(field => (
-                <Form.Item
-                  key={field.name}
-                  label={
-                    <Tooltip title={field.description}>
-                      <Space>
-                        {field.label}
-                        {field.required && <Text type="danger">*</Text>}
-                      </Space>
-                    </Tooltip>
-                  }
-                  name={field.name}
-                  valuePropName={field.type === 'switch' ? 'checked' : 'value'}
-                  rules={field.required ? [{ required: true, message: `请输入${field.label}` }] : []}
-                  hidden={field.hidden}
-                >
-                  {renderFormItem(field)}
-                </Form.Item>
-              ))}
-            </div>
-          ),
-        }))}
-      />
-    );
-  };
+    // 按指定顺序渲染分组
+    const groups = orderedGroups.map(groupName => {
+      const fields = config.fields
+        .filter(field => field.group === groupName)
+        .filter(field => shouldShowField(field, formValues));
+
+      // 如果分组下没有可见的字段，则不显示该分组
+      if (fields.length === 0) return null;
+
+      return {
+        key: groupName,
+        label: groupName,
+        children: (
+          <div className="space-y-4">
+            {fields.map(field => (
+              <Form.Item
+                key={field.name}
+                label={
+                  <Tooltip title={field.description}>
+                    <Space>
+                      {field.label}
+                      {field.required && <Text type="danger">*</Text>}
+                    </Space>
+                  </Tooltip>
+                }
+                name={field.name}
+                valuePropName={field.type === 'switch' ? 'checked' : 'value'}
+                rules={field.required ? [{ required: true, message: `请输入${field.label}` }] : []}
+              >
+                {renderFormItem(field)}
+              </Form.Item>
+            ))}
+          </div>
+        ),
+      };
+    }).filter((group): group is NonNullable<typeof group> => group !== null);
+
+    return groups;
+  }, [config, formValues, processing, selectedDocument]);
 
   return (
     <Card
@@ -240,10 +242,6 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
         <div className="flex flex-col items-center justify-center h-full text-gray-400">
           <div className="text-lg mb-2">请先在左侧选择一个文档</div>
         </div>
-      ) : loading ? (
-        <div className="flex flex-col items-center justify-center h-full text-gray-400">
-          <div className="text-lg mb-2">正在加载配置...</div>
-        </div>
       ) : !config ? (
         <div className="flex flex-col items-center justify-center h-full text-gray-400">
           <div className="text-lg mb-2">未获取到配置，请重试或联系管理员</div>
@@ -253,7 +251,10 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
+          onValuesChange={handleValuesChange}
           className="flex flex-col h-full"
+          initialValues={initialValues}
+          key={selectedDocument.id}
         >
           <div className="flex-1">
             {config?.description && (
@@ -261,7 +262,11 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
                 <Text type="secondary">{config.description}</Text>
               </div>
             )}
-            {renderFormGroups()}
+            <Tabs
+              tabPosition="top"
+              style={{ height: '100%' }}
+              items={formGroups}
+            />
           </div>
 
           <Form.Item className="mt-4 mb-0">

@@ -45,6 +45,7 @@ export interface FileTypeConfigResponse {
   icon?: string;
   fields: ConfigField[];
   default_config: Record<string, any>;
+  group_order: string[];
 }
 
 export interface DocumentLoadConfig {

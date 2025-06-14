@@ -178,7 +178,8 @@ async def get_load_config(
                 description=config.description,
                 icon=config.icon,
                 fields=config.fields,
-                default_config=config.default_config
+                default_config=config.default_config,
+                group_order=config.group_order
             )
             logger.info(f"成功生成配置响应: document_id={document_id}")
             return ResponseModel[FileTypeConfigResponse](data=response)
