@@ -1,4 +1,10 @@
-export type DocumentStatus = 'pending' | 'processing' | 'completed' | 'failed';
+export type DocumentStatus =
+  | 'pending'
+  | 'loaded'
+  | 'chunked'
+  | 'embedded'
+  | 'indexed'
+  | 'error';
 
 export interface Document {
   id: number;

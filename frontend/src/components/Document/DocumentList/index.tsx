@@ -79,9 +79,11 @@ const DocumentList: React.FC<DocumentListProps> = ({ onSelectDocument, selectedI
       render: (status: DocumentStatus) => {
         const statusConfig: Record<DocumentStatus, { color: string; icon: React.ReactNode; text: string }> = {
           pending: { color: 'default', icon: <ClockCircleOutlined />, text: '待处理' },
-          processing: { color: 'processing', icon: <LoadingOutlined />, text: '处理中' },
-          completed: { color: 'success', icon: <CheckCircleOutlined />, text: '已完成' },
-          failed: { color: 'error', icon: <CloseCircleOutlined />, text: '处理失败' },
+          loaded: { color: 'blue', icon: <CheckCircleOutlined />, text: '已加载' },
+          chunked: { color: 'cyan', icon: <CheckCircleOutlined />, text: '已分块' },
+          embedded: { color: 'purple', icon: <CheckCircleOutlined />, text: '已嵌入' },
+          indexed: { color: 'green', icon: <CheckCircleOutlined />, text: '已索引' },
+          error: { color: 'error', icon: <CloseCircleOutlined />, text: '错误' },
         };
         const config = statusConfig[status];
         return (
