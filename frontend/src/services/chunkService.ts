@@ -17,7 +17,7 @@ export class ChunkService {
       documentId: number,
       config: DocumentChunkConfig): Promise<LangChainChunk[]> {
     try {
-      const response = await post<LangChainChunk[]>(`${API_CHUNK_URL}/${documentId}`, { config });
+      const response = await post<LangChainChunk[]>(`${API_CHUNK_URL}/${documentId}/parse`, { config });
       return response;
     } catch (error) {
       console.error("分块失败:", error);

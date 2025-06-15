@@ -47,6 +47,6 @@ CHUNK_CONFIG = ConfigParams(
     ]
 )
 
-def get_default_config() -> Dict[str, Any]:
+def get_default_config() -> ConfigParams:
     """根据文件类型获取默认加载配置"""
     return CHUNK_CONFIG

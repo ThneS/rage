@@ -548,7 +548,7 @@ def get_file_type_config(file_ext: str) -> ConfigParams:
 
     return config
 
-def get_default_config(file_ext: str) -> Dict[str, Any]:
+def get_default_config(file_ext: str) -> ConfigParams:
     """根据文件类型获取默认配置"""
     config = get_file_type_config(file_ext)
     return config

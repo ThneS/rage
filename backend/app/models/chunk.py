@@ -27,10 +27,10 @@ class Chunk(Base):
     __tablename__ = "chunks"
     id = Column(Integer, primary_key=True, index=True)
     document_id = Column(Integer, ForeignKey("documents.id"), nullable=False, index=True)
-    document_page = Column(Integer, nullable=True)
-    page = Column(Integer, nullable=True)
-    content = Column(Text, nullable=False)
     meta_data = Column(JSON, nullable=True)
     config = Column(JSON, nullable=True)
     result = Column(JSON, nullable=True)
     document = relationship("Document", back_populates="chunks")
+
+    def __repr__(self):
+        return f"Chunk(id={self.id}, document_id={self.document_id}, page={self.page})"
