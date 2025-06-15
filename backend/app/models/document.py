@@ -19,10 +19,9 @@ class Document(Base):
         default=DocumentStatus.PENDING,
         index=True
     )
-    doc_metadata = Column(JSON, nullable=True)
-    load_config = Column(JSON, nullable=True)  # 存储加载配置
-    load_result = Column(JSON, nullable=True)  # 存储加载结果
-    error_message = Column(String(512), nullable=True)
+    meta_data = Column(JSON, nullable=True)
+    config = Column(JSON, nullable=True)
+    result = Column(JSON, nullable=True)
 
     # 时间字段
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

@@ -4,14 +4,14 @@ from sqlalchemy.orm import Session
 import json
 import logging
 from app.core.database import get_db
-from app.core.document_config import get_file_type_config
+from app.configuration.document import get_file_type_config
 from app.schemas.document import (
     Document,
     DocumentLoadConfig,
     FileTypeConfigResponse,
     DocumentStatus
 )
-from app.services.document_service import DocumentService
+from app.services.document import DocumentService
 from app.schemas.response import ResponseModel
 from app.schemas.document import LangChainDocument
 # 配置日志
@@ -159,7 +159,7 @@ async def get_load_config(
             logger.debug(f"正在获取文件类型配置: file_type={document.file_type}")
             # 如果文档是已经加载过，则返回加载过的配置
             config = get_file_type_config(document.file_type)
-            if document.status == DocumentStatus.COMPLETED:
+            if document.status == DocumentStatus.LOADED:
                 # 从document.load_config中获取配置信息
                 load_config_data = document.load_config
                 config = load_config_data.get("config", config)

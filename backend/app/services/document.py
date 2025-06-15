@@ -2,19 +2,17 @@ import os
 import logging
 import hashlib
 import json
-from typing import Optional, Dict, Any, List, Tuple
+from typing import Optional, Dict, Any, List
 from datetime import datetime
 from fastapi import UploadFile, HTTPException
 from sqlalchemy.orm import Session
-from app.core.document_config import get_file_type_config, get_default_load_config
+from app.configuration.document import get_file_type_config, get_default_load_config
 from app.models.document import Document
 from app.utils.file import save_upload_file, get_file_extension, delete_file
 from app.schemas.document import (
     DocumentLoadConfig,
     LangChainDocument,
     DocumentStatus,
-    LoadConfig,
-    LoadResult
 )
 from app.services.parsers import LangchainParser, LlamaIndexParser
 
@@ -154,7 +152,7 @@ class DocumentService:
                 file_path=file_path,
                 file_type=file_ext,
                 file_size=os.path.getsize(file_path),
-                doc_metadata={
+                meta_data={
                     "file_type_info": {
                         "name": file_config.name,
                         "description": file_config.description
@@ -211,11 +209,11 @@ class DocumentService:
                 parse_result = parser.parse(file_path, config)
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"处理文档失败: {str(e)}")
-            # 存入 doc_metadata
-            document.doc_metadata = document.doc_metadata or {}
-            document.doc_metadata["parse_result"] = parse_result
+            # 存入 metadata
+            document.meta_data = document.meta_data or {}
+            document.meta_data["parse_result"] = parse_result
             # 更新文档状态
-            document.status = DocumentStatus.COMPLETED
+            document.status = DocumentStatus.LOADED
             # 将config转为json进行存储
             document.load_config = {
                 "config": config.model_dump(),
@@ -250,7 +248,6 @@ class DocumentService:
             document = self.get_document(document_id)
             if not document:
                 raise HTTPException(status_code=404, detail="文档不存在")
-
             try:
                 return get_default_load_config(document.file_type)
             except ValueError as e:

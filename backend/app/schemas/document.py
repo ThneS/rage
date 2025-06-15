@@ -1,17 +1,16 @@
 from datetime import datetime
 from typing import Optional, Dict, Any, List, Union
 from pydantic import BaseModel, Field, field_validator
-from app.core.document_config import ConfigField, ConfigFieldOption
 from enum import Enum
+from app.schemas.common_config import ConfigField, ConfigFieldOption
 
 class DocumentStatus(str, Enum):
     """文档状态枚举"""
     PENDING = "pending"      # 待处理
-    LOADING = "loading"      # 加载中
-    COMPLETED = "completed"  # 已加载
-    FAILED = "failed"        # 加载失败
-    PROCESSING = "processing"  # 处理中
-    PROCESSED = "processed"    # 已处理
+    LOADED = "loaded"        # 已加载
+    CHUNKED = "chunked"      # 已分块
+    EMBEDDED = "embedded"    # 已嵌入
+    INDEXED = "indexed"      # 已索引
     ERROR = "error"          # 错误
 
 class DocumentBase(BaseModel):
@@ -19,7 +18,7 @@ class DocumentBase(BaseModel):
     filename: str = Field(..., description="文件名")
     file_type: str = Field(..., description="文件类型（扩展名）")
     file_size: int = Field(..., description="文件大小（字节）")
-    doc_metadata: Optional[Dict[str, Any]] = Field(
+    meta_data: Optional[Dict[str, Any]] = Field(
         default=None,
         description="文档元数据，可包含标题、作者、创建时间等信息"
     )
@@ -57,7 +56,7 @@ class DocumentBase(BaseModel):
             raise ValueError("文件大小不能超过100MB")
         return v
 
-    @field_validator('doc_metadata')
+    @field_validator('meta_data')
     @classmethod
     def validate_metadata(cls, v):
         """验证元数据"""
