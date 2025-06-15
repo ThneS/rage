@@ -19,11 +19,11 @@ class ConfigFieldOption(BaseModel):
 class ConfigField(BaseModel):
     name: str = Field(..., description="字段名称")
     label: str = Field(..., description="字段标签")
-    type: Literal["switch", "select", "radio", "number", "text", "textarea", "range"] = Field(..., description="字段类型")
+    type: Literal["switch", "select", "radio", "number", "text", "textarea", "range", "checkbox"] = Field(..., description="字段类型")
     description: Optional[str] = Field(None, description="字段描述")
     default: Any = Field(..., description="默认值")
     required: bool = Field(default=False, description="是否必填")
-    options: Optional[List[ConfigFieldOption]] = Field(None, description="选项列表（用于select和radio类型）")
+    options: Optional[List[ConfigFieldOption]] = Field(None, description="选项列表（用于select、radio、checkbox类型）")
     min: Optional[Union[int, float]] = Field(None, description="最小值（用于number和range类型）")
     max: Optional[Union[int, float]] = Field(None, description="最大值（用于number和range类型）")
     step: Optional[Union[int, float]] = Field(None, description="步长（用于number和range类型）")

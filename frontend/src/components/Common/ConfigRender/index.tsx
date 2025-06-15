@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Form, Space, Tooltip, Typography, Tabs, Alert, Input, InputNumber, Select, Switch, Radio } from 'antd';
+import { Form, Space, Tooltip, Typography, Tabs, Alert, Input, InputNumber, Select, Switch, Radio, Checkbox } from 'antd';
 import type { ConfigField, ConfigParams } from '@/types/common_config';
 
 const { Text } = Typography;
@@ -76,6 +76,16 @@ const renderFormItem = (field: ConfigField, commonProps: any) => {
           max={field.max}
           step={field.step}
           className="w-full"
+        />
+      );
+    case 'checkbox':
+      return (
+        <Checkbox.Group
+          {...commonProps}
+          options={field.options?.map(option => ({
+            label: option.label,
+            value: option.value,
+          }))}
         />
       );
     default:

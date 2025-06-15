@@ -7,7 +7,7 @@ export interface ConfigFieldOption {
 export interface ConfigField {
   name: string;
   label: string;
-  type: 'switch' | 'select' | 'radio' | 'number' | 'text' | 'textarea' | 'range';
+  type: 'switch' | 'select' | 'radio' | 'number' | 'text' | 'textarea' | 'range' | 'checkbox';
   description?: string;
   default: any;
   required?: boolean;
