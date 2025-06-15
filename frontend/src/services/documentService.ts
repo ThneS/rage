@@ -5,7 +5,7 @@ import { get, del, upload, post } from '@/utils/request';
 export class DocumentService {
   async getDocuments(): Promise<Document[]> {
     try {
-      const response = await get<Document[]>(API_DOCUMENTS_URL);
+      const response = await get<Document[]>(`${API_DOCUMENTS_URL}/`);
       return Array.isArray(response) ? response : [];
     } catch (error) {
       console.error('获取文档列表失败:', error);

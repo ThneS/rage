@@ -1,11 +1,12 @@
 from typing import List
-from app.schemas.document import DocumentLoadConfig, LangChainDocument
+from app.schemas.document import LangChainDocument
 from langchain_community.document_loaders import (
     PyPDFLoader,
 )
+from app.schemas.common_config import ConfigParams
 
 class LangchainParser:
-    def parse(self, file_path: str, config: DocumentLoadConfig)-> List[LangChainDocument]:
+    def parse(self, file_path: str, config: ConfigParams)-> List[LangChainDocument]:
         # 根据config_dict判断使用哪个loader
         loader_tool = config.get("loader_tool", "langchain")
         if loader_tool == "langchain":

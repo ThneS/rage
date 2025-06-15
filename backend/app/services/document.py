@@ -1,20 +1,19 @@
 import os
 import logging
-import hashlib
-import json
 from typing import Optional, Dict, Any, List
 from datetime import datetime
 from fastapi import UploadFile, HTTPException
 from sqlalchemy.orm import Session
-from app.configuration.document import get_file_type_config, get_default_load_config
 from app.models.document import Document
+from app.utils.hash import compute_config_hash
 from app.utils.file import save_upload_file, get_file_extension, delete_file
 from app.schemas.document import (
-    DocumentLoadConfig,
     LangChainDocument,
     DocumentStatus,
 )
 from app.services.parsers import LangchainParser, LlamaIndexParser
+from app.schemas.configuration.document import get_default_config, get_file_type_config
+from app.schemas.common_config import ConfigParams
 
 # 配置日志
 logger = logging.getLogger(__name__)
@@ -22,19 +21,6 @@ logger = logging.getLogger(__name__)
 class DocumentService:
     def __init__(self, db: Session):
         self.db = db
-    def _compute_config_hash(self, config: Dict[str, Any]) -> str:
-        """计算配置的哈希值
-
-        Args:
-            config: 配置字典
-
-        Returns:
-            str: 配置的哈希值
-        """
-        # 将配置转换为JSON字符串，确保键值对顺序一致
-        config_str = json.dumps(config, sort_keys=True)
-        # 使用SHA-256计算哈希值
-        return hashlib.sha256(config_str.encode()).hexdigest()
 
     def get_document(self, document_id: int) -> Optional[Document]:
         """获取文档信息
@@ -73,10 +59,6 @@ class DocumentService:
                         status_code=500,
                         detail=f"文档 {document_id} 的文件类型为空"
                     )
-                # 尝试获取文件类型配置，验证是否支持
-                logger.debug(f"验证文件类型: document_id={document_id}, file_type={file_ext}")
-                get_file_type_config(file_ext)
-                logger.debug(f"文件类型验证成功: document_id={document_id}, file_type={file_ext}")
             except ValueError as e:
                 logger.warning(f"文件类型不支持: document_id={document_id}, file_type={file_ext}, error={str(e)}")
                 raise HTTPException(
@@ -176,7 +158,7 @@ class DocumentService:
     def parse_document(
         self,
         document: Document,
-        config: DocumentLoadConfig
+        config: ConfigParams
     ) -> List[LangChainDocument]:
         """处理文档
 
@@ -215,9 +197,9 @@ class DocumentService:
             # 更新文档状态
             document.status = DocumentStatus.LOADED
             # 将config转为json进行存储
-            document.load_config = {
+            document.config = {
                 "config": config.model_dump(),
-                "hash": self._compute_config_hash(config.model_dump()),
+                "hash": compute_config_hash(config.model_dump()),
                 "created_at": datetime.now().isoformat()
             }
             self.db.commit()
@@ -232,7 +214,7 @@ class DocumentService:
                 detail=f"处理文档失败: {str(e)}"
             )
 
-    def get_load_config(self, document_id: int) -> DocumentLoadConfig:
+    def get_load_config(self, document_id: int) -> ConfigParams:
         """获取文档加载配置
 
         Args:
@@ -249,7 +231,7 @@ class DocumentService:
             if not document:
                 raise HTTPException(status_code=404, detail="文档不存在")
             try:
-                return get_default_load_config(document.file_type)
+                return get_default_config(document.file_type)
             except ValueError as e:
                 raise HTTPException(status_code=400, detail=str(e))
         except HTTPException:

@@ -13,6 +13,7 @@ import {
   Tooltip,
   Radio,
   Tabs,
+  Alert,
 } from 'antd';
 import type { Document } from '@/types/document';
 import type { DocumentChunkConfig } from '@/types/chunk';
@@ -54,8 +55,7 @@ const ChunkConfig: React.FC<ChunkConfigProps> = ({
 }) => {
   const [form] = Form.useForm();
   const { message } = App.useApp();
-  const config = useAppSelector(state => state.chunk.config);
-  const loading = useAppSelector(state => state.chunk.loading);
+  const { config, loading, error } = useAppSelector(state => state.chunk);
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [initialValues, setInitialValues] = useState<Record<string, any>>({});
   const dispatch = useAppDispatch();
@@ -79,20 +79,26 @@ const ChunkConfig: React.FC<ChunkConfigProps> = ({
   const handleValuesChange = (_: any, allValues: Record<string, any>) => {
     setFormValues(allValues);
   };
+
   const handleSubmit = async (values: Record<string, any>) => {
     if (!config || !selectedDocument) {
       message.error('配置信息不完整');
       return;
     }
-    // 合并配置信息和表单值
-    const submitConfig: DocumentChunkConfig = {
-      ...config,
-      default_config: {
-        ...config.default_config,
-        ...values
-      }
-    };
-    dispatch(processChunk(selectedDocument.id, submitConfig));
+    try {
+      // 合并配置信息和表单值
+      const submitConfig: DocumentChunkConfig = {
+        ...config,
+        default_config: {
+          ...config.default_config,
+          ...values
+        }
+      };
+      await dispatch(processChunk(selectedDocument.id, submitConfig));
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : '处理失败';
+      message.error(errorMessage);
+    }
   };
 
   // 根据字段类型渲染表单项
@@ -167,7 +173,6 @@ const ChunkConfig: React.FC<ChunkConfigProps> = ({
   // 使用 useMemo 优化分组渲染
   const formGroups = useMemo(() => {
     if (!config?.group_order) return [];
-
     // 使用配置中指定的分组顺序
     const orderedGroups = config.group_order;
 
@@ -252,6 +257,16 @@ const ChunkConfig: React.FC<ChunkConfigProps> = ({
           key={selectedDocument.id}
         >
           <div className="flex-1">
+            {error && (
+              <Alert
+                message="处理失败"
+                description={error}
+                type="error"
+                showIcon
+                className="mb-4"
+                closable
+              />
+            )}
             {config?.description && (
               <div className="mb-4 p-4 bg-gray-50 rounded-lg">
                 <Text type="secondary">{config.description}</Text>
@@ -281,7 +296,7 @@ const ChunkConfig: React.FC<ChunkConfigProps> = ({
                 style={{ minWidth: 100 }}
                 disabled={!selectedDocument || !ChunkResult}
               >
-                查看加载
+                查看分块
               </Button>
             </Space>
           </Form.Item>

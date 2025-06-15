@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { chunkService } from '@/services/chunkService';
 import type { ChunkConfigResponse } from '@/types/chunk';
 import type { AppThunk, AppDispatch } from '@/store/types';
@@ -41,20 +41,25 @@ const chunkSlice = createSlice({
 export const { setConfig, setLoading, setError, setChunkResult } = chunkSlice.actions;
 
 
-export const fetchChunkConfig = createAsyncThunk<ChunkConfigResponse, number>(
-  'chunk/fetchChunkConfig',
-  async (documentId) => {
+export const fetchChunkConfig = (documentId: number): AppThunk => async (dispatch: AppDispatch) => {
+  try {
+    dispatch(setLoading(true));
     const config = await chunkService.getChunkConfig(documentId);
-    if (config === null) throw new Error('获取分块配置失败');
-    return config;
+    dispatch(setConfig(config));
+  } catch (error) {
+    dispatch(setError(error instanceof Error ? error.message : '获取分块配置失败'));
+    dispatch(setConfig(null));
+  } finally {
+    dispatch(setLoading(false));
   }
-);
+};
 
 export const processChunk = (documentId: number, config: any): AppThunk<Promise<void>> => async (dispatch: AppDispatch) => {
   try {
     dispatch(setLoading(true));
     const result = await chunkService.processChunk(documentId, config);
     dispatch(setChunkResult(result));
+    await dispatch(fetchChunkConfig(documentId));
   } catch (error) {
     dispatch(setError(error instanceof Error ? error.message : '处理文档失败'));
     throw error;

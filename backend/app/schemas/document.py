@@ -1,17 +1,7 @@
 from datetime import datetime
-from typing import Optional, Dict, Any, List, Union
+from typing import Optional, Dict, Any, List
 from pydantic import BaseModel, Field, field_validator
-from enum import Enum
-from app.schemas.common_config import ConfigField, ConfigFieldOption
-
-class DocumentStatus(str, Enum):
-    """文档状态枚举"""
-    PENDING = "pending"      # 待处理
-    LOADED = "loaded"        # 已加载
-    CHUNKED = "chunked"      # 已分块
-    EMBEDDED = "embedded"    # 已嵌入
-    INDEXED = "indexed"      # 已索引
-    ERROR = "error"          # 错误
+from app.schemas.common_config import DocumentStatus
 
 class DocumentBase(BaseModel):
     """文档基础模型"""
@@ -102,52 +92,6 @@ class Document(DocumentBase):
 
     class Config:
         from_attributes = True
-
-class FileTypeConfigResponse(BaseModel):
-    """文件类型配置响应"""
-    name: str = Field(..., description="文件类型名称")
-    description: str = Field(..., description="文件类型描述")
-    icon: Optional[str] = Field(None, description="文件类型图标")
-    fields: List[ConfigField] = Field(..., description="配置字段列表")
-    default_config: Dict[str, Any] = Field(..., description="默认配置值")
-    group_order: List[str] = Field(..., description="分组展示顺序")
-
-    # 实现read方法，根据 config里面的的group_order过滤fields，选择可用的字段，在读取的取值
-    def read(self, config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """根据配置过滤并返回可用的字段值
-
-        Args:
-            config: 配置字典，包含 group_order 等字段
-
-        Returns:
-            Dict[str, Any]: 过滤后的字段值字典
-        """
-        if not config:
-            return {}
-
-        # 获取配置中的分组顺序
-        group_order = config.get('group_order', [])
-        if not group_order:
-            return {}
-
-        # 按分组顺序过滤字段
-        filtered_fields = {}
-        for group in group_order:
-            # 找出属于当前分组的字段
-            group_fields = [field for field in self.fields if field.group == group]
-
-            # 将字段添加到结果中
-            for field in group_fields:
-                field_name = field.name
-                # 从 default_config 中获取字段值
-                if field_name in self.default_config:
-                    filtered_fields[field_name] = self.default_config[field_name]
-
-        return filtered_fields
-
-class DocumentLoadConfig(FileTypeConfigResponse):
-    def get(self, key: str, default: Any = None) -> Any:
-        return self.default_config.get(key, default)
 
 class LangChainDocument(BaseModel):
     """LangChain文档模型

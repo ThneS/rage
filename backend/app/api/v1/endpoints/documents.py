@@ -4,11 +4,10 @@ from sqlalchemy.orm import Session
 import json
 import logging
 from app.core.database import get_db
-from app.configuration.document import get_file_type_config
+from app.schemas.common_config import ConfigParams
+from app.schemas.configuration.document import get_default_config
 from app.schemas.document import (
     Document,
-    DocumentLoadConfig,
-    FileTypeConfigResponse,
     DocumentStatus
 )
 from app.services.document import DocumentService
@@ -101,11 +100,11 @@ def get_documents(
     docs_pydantic = [Document.model_validate(doc) for doc in docs]
     return ResponseModel[List[Document]](data=docs_pydantic)
 
-@router.get("/{document_id}/load-config", response_model=ResponseModel[FileTypeConfigResponse])
+@router.get("/{document_id}/load-config", response_model=ResponseModel[ConfigParams])
 async def get_load_config(
     document_id: int,
     db: Session = Depends(get_db)
-) -> ResponseModel[FileTypeConfigResponse]:
+) -> ResponseModel[ConfigParams]:
     """获取文档加载配置
 
     根据文档的文件类型返回对应的加载配置，包括：
@@ -134,7 +133,7 @@ async def get_load_config(
         service = DocumentService(db)
 
         try:
-            document = service.get_document(document_id)
+            document:Document = service.get_document(document_id)
         except Exception as e:
             logger.error(f"获取文档信息时发生异常: document_id={document_id}, error={str(e)}", exc_info=True)
             if isinstance(e, HTTPException):
@@ -158,14 +157,14 @@ async def get_load_config(
         try:
             logger.debug(f"正在获取文件类型配置: file_type={document.file_type}")
             # 如果文档是已经加载过，则返回加载过的配置
-            config = get_file_type_config(document.file_type)
+            config = get_default_config(document.file_type)
             if document.status == DocumentStatus.LOADED:
                 # 从document.load_config中获取配置信息
-                load_config_data = document.load_config
+                load_config_data = document.config
                 config = load_config_data.get("config", config)
             # 将配置转换为 DocumentLoadConfig 对象
             try:
-                config = DocumentLoadConfig.model_validate(config)
+                config = ConfigParams.model_validate(config)
             except Exception as e:
                 logger.error(f"配置转换失败: document_id={document_id}, error={str(e)}", exc_info=True)
                 config = config
@@ -185,16 +184,7 @@ async def get_load_config(
 
         # 返回配置信息
         try:
-            response = FileTypeConfigResponse(
-                name=config.name,
-                description=config.description,
-                icon=config.icon,
-                fields=config.fields,
-                default_config=config.default_config,
-                group_order=config.group_order
-            )
-            logger.info(f"成功生成配置响应: document_id={document_id}")
-            return ResponseModel[FileTypeConfigResponse](data=response)
+            return ResponseModel[ConfigParams](data=config)
         except Exception as e:
             logger.error(f"生成配置响应失败: document_id={document_id}, error={str(e)}", exc_info=True)
             raise HTTPException(
@@ -232,7 +222,7 @@ def delete_document(
 @router.post("/{document_id}/parse", response_model=ResponseModel[List[LangChainDocument]])
 def process_document(
     document_id: int,
-    config: DocumentLoadConfig = Body(..., description="加载配置参数"),
+    config: ConfigParams = Body(..., description="加载配置参数"),
     db: Session = Depends(get_db)
 ):
     """

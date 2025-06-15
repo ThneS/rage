@@ -1,16 +1,6 @@
-from typing import Dict, Any, List, Optional
-from pydantic import BaseModel, Field
-from app.schemas.common_config import ConfigField, ConfigFieldOption
-
-class FileTypeConfig(BaseModel):
-    """文件类型配置"""
-    name: str = Field(..., description="文件类型名称")
-    description: str = Field(..., description="文件类型描述")
-    allowed_extensions: List[str] = Field(..., description="允许的文件扩展名")
-    icon: Optional[str] = Field(None, description="文件类型图标")
-    fields: List[ConfigField] = Field(..., description="配置字段列表")
-    default_config: Dict[str, Any] = Field(..., description="默认配置值")
-    group_order: List[str] = Field(..., description="分组展示顺序")
+from typing import Dict, Any, List
+from pydantic import Field
+from app.schemas.common_config import ConfigField, ConfigFieldOption, ConfigParams
 
 # PDF配置字段
 PDF_FIELDS = [
@@ -429,7 +419,7 @@ IMAGE_FIELDS = [
 ]
 
 # 具体文件类型配置
-PDF_CONFIG = FileTypeConfig(
+PDF_CONFIG = ConfigParams(
     name="PDF文档",
     description="支持PDF格式文档的加载和处理，支持多种工具链（LangChain、PyPDF、pdfplumber、PyMuPDF、Unstructured、LlamaParse）及OCR、表格解析等高级功能。",
     allowed_extensions=["pdf"],
@@ -448,7 +438,7 @@ PDF_CONFIG = FileTypeConfig(
     ]
 )
 
-WORD_CONFIG = FileTypeConfig(
+WORD_CONFIG = ConfigParams(
     name="Word文档",
     description="支持Word格式文档的加载和处理",
     allowed_extensions=["docx"],
@@ -462,7 +452,7 @@ WORD_CONFIG = FileTypeConfig(
     ]
 )
 
-EXCEL_CONFIG = FileTypeConfig(
+EXCEL_CONFIG = ConfigParams(
     name="Excel表格",
     description="支持Excel格式表格的加载和处理",
     allowed_extensions=["xlsx"],
@@ -477,7 +467,7 @@ EXCEL_CONFIG = FileTypeConfig(
     ]
 )
 
-CSV_CONFIG = FileTypeConfig(
+CSV_CONFIG = ConfigParams(
     name="CSV文件",
     description="支持CSV格式文件的加载和处理",
     allowed_extensions=["csv"],
@@ -491,7 +481,7 @@ CSV_CONFIG = FileTypeConfig(
     ]
 )
 
-IMAGE_CONFIG = FileTypeConfig(
+IMAGE_CONFIG = ConfigParams(
     name="图片文件",
     description="支持常见图片格式的加载和处理",
     allowed_extensions=["jpg", "jpeg", "png"],
@@ -507,7 +497,7 @@ IMAGE_CONFIG = FileTypeConfig(
 )
 
 # 文件类型配置映射
-FILE_TYPE_CONFIGS: Dict[str, FileTypeConfig] = {
+FILE_TYPE_CONFIGS: Dict[str, ConfigParams] = {
     "pdf": PDF_CONFIG,
     "docx": WORD_CONFIG,
     "xlsx": EXCEL_CONFIG,
@@ -517,7 +507,7 @@ FILE_TYPE_CONFIGS: Dict[str, FileTypeConfig] = {
     "png": IMAGE_CONFIG
 }
 
-def get_file_type_config(file_ext: str) -> FileTypeConfig:
+def get_file_type_config(file_ext: str) -> ConfigParams:
     """获取文件类型配置
 
     Args:
@@ -558,7 +548,7 @@ def get_file_type_config(file_ext: str) -> FileTypeConfig:
 
     return config
 
-def get_default_load_config(file_ext: str) -> Dict[str, Any]:
-    """根据文件类型获取默认加载配置"""
+def get_default_config(file_ext: str) -> Dict[str, Any]:
+    """根据文件类型获取默认配置"""
     config = get_file_type_config(file_ext)
-    return config.default_config
+    return config
