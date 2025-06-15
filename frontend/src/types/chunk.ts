@@ -1,6 +1,6 @@
 import type { DocumentStatus, ConfigField } from "@/types/common_config";
 
-export interface Document {
+export interface Chunk {
   id: number;
   filename: string;
   file_type: string;
@@ -14,7 +14,7 @@ export interface Document {
   error_message?: string;
 }
 
-export interface FileTypeConfigResponse {
+export interface ChunkConfigResponse {
   name: string;
   description: string;
   icon?: string;
@@ -23,11 +23,11 @@ export interface FileTypeConfigResponse {
   group_order: string[];
 }
 
-export interface DocumentLoadConfig extends FileTypeConfigResponse {
+export interface DocumentChunkConfig extends ChunkConfigResponse {
   [key: string]: any;  // 允许动态配置项
 }
 
-export interface LangChainDocument {
+export interface LangChainChunk {
   page_content: string;  // 文档内容
   metadata: {
     source?: string;     // 文档来源

@@ -15,19 +15,19 @@ import {
   Tabs,
 } from 'antd';
 import type { Document } from '@/types/document';
-import type { DocumentLoadConfig } from '@/types/document';
+import type { DocumentChunkConfig } from '@/types/chunk';
 import type { ConfigField } from '@/types/common_config';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { processDocument, fetchLoadConfig } from '@/store/slices/documentSlice';
+import { fetchChunkConfig, processChunk } from '@/store/slices/chunkSlice';
 
 const { Option } = Select;
 const { Text } = Typography;
 
-interface LoadConfigProps {
+interface ChunkConfigProps {
   selectedDocument: Document | null;
   processing: boolean;
-  onViewLoad?: () => void;
-  loadResult?: any;
+  onViewChunk?: () => void;
+  ChunkResult?: any;
 }
 
 // 检查字段是否应该显示
@@ -46,16 +46,16 @@ const shouldShowField = (field: ConfigField, formValues: Record<string, any>): b
   return currentValue === depValue;
 };
 
-const LoadConfig: React.FC<LoadConfigProps> = ({
+const ChunkConfig: React.FC<ChunkConfigProps> = ({
   selectedDocument,
   processing,
-  onViewLoad,
-  loadResult,
+  onViewChunk,
+  ChunkResult,
 }) => {
   const [form] = Form.useForm();
   const { message } = App.useApp();
-  const config = useAppSelector(state => state.document.config);
-  const loading = useAppSelector(state => state.document.loading);
+  const config = useAppSelector(state => state.chunk.config);
+  const loading = useAppSelector(state => state.chunk.loading);
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [initialValues, setInitialValues] = useState<Record<string, any>>({});
   const dispatch = useAppDispatch();
@@ -63,7 +63,7 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
   // 获取文档加载配置
   useEffect(() => {
     if (selectedDocument) {
-      dispatch(fetchLoadConfig(selectedDocument.id));
+      dispatch(fetchChunkConfig(selectedDocument.id));
     }
   }, [selectedDocument, dispatch]);
 
@@ -85,14 +85,14 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
       return;
     }
     // 合并配置信息和表单值
-    const submitConfig: DocumentLoadConfig = {
+    const submitConfig: DocumentChunkConfig = {
       ...config,
       default_config: {
         ...config.default_config,
         ...values
       }
     };
-    dispatch(processDocument(selectedDocument.id, submitConfig));
+    dispatch(processChunk(selectedDocument.id, submitConfig));
   };
 
   // 根据字段类型渲染表单项
@@ -277,9 +277,9 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
               </Button>
               <Button
                 type="default"
-                onClick={onViewLoad}
+                onClick={onViewChunk}
                 style={{ minWidth: 100 }}
-                disabled={!selectedDocument || !loadResult}
+                disabled={!selectedDocument || !ChunkResult}
               >
                 查看加载
               </Button>
@@ -291,4 +291,4 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
   );
 };
 
-export default LoadConfig;
+export default ChunkConfig;

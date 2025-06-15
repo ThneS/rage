@@ -1,11 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import type { AppThunk } from '../types';
-import { documentService } from '../../services/documentService';
+import type { AppThunk, AppDispatch } from '@/store/types';
+import { documentService } from '@/services/documentService';
 import type { Document, FileTypeConfigResponse, LangChainDocument } from '../../types/document';
-import type { AppDispatch } from '../types';
 
-interface DocumentState {
+export interface DocumentState {
   documents: Document[];
   currentDocument: Document | null;
   config: FileTypeConfigResponse | null;
@@ -130,7 +129,7 @@ export const pollDocumentStatus = (documentId: number): AppThunk => async (dispa
 
       if (document) {
         // 如果文档状态是处理中，继续轮询
-        if (document.status === 'processing' && attempts < maxAttempts) {
+        if (document.status === 'pending' && attempts < maxAttempts) {
           attempts++;
           dispatch(setDocuments(documents));
           setTimeout(poll, pollInterval);

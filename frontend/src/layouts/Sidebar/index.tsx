@@ -26,7 +26,7 @@ const menuItems = [
     label: '文档加载',
   },
   {
-    key: '/document-splitter',
+    key: '/chunk',
     icon: <ScissorOutlined />,
     label: '文档分块',
   },

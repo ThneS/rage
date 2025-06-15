@@ -1,27 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   Card,
   Table,
   Button,
-  Upload,
-  message,
   Popconfirm,
   Tag,
 } from 'antd';
 import {
-  UploadOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
   CloseCircleOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import type { UploadFile, RcFile } from 'antd/es/upload';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { fetchDocuments, uploadDocument, deleteDocument } from '@/store/slices/documentSlice';
+import { fetchDocuments, deleteDocument } from '@/store/slices/documentSlice';
 import type { Document } from '@/types/document';
-import { documentStatusConfig, type DocumentStatus } from '@/types/common_config';
-
-const { Dragger } = Upload;
+import type { DocumentStatus } from '@/types/common_config';
+import { documentStatusConfig } from '@/types/common_config';
 
 const iconMap = {
   ClockCircleOutlined: ClockCircleOutlined,
@@ -29,16 +24,20 @@ const iconMap = {
   CloseCircleOutlined: CloseCircleOutlined,
 };
 
-interface DocumentListProps {
+interface ChunkListProps {
   onSelectDocument?: (document: Document) => void;
   selectedId?: number;
 }
 
-const DocumentList: React.FC<DocumentListProps> = ({ onSelectDocument, selectedId }) => {
+const ChunkList: React.FC<ChunkListProps> = ({ onSelectDocument, selectedId }) => {
   const dispatch = useAppDispatch();
   const { documents, loading } = useAppSelector((state) => state.document);
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+
+  // 只显示已加载的文档
+  const loadedDocuments = useMemo(() => {
+    return documents.filter(doc => doc.status === 'loaded');
+  }, [documents]);
 
   useEffect(() => {
     dispatch(fetchDocuments());
@@ -51,17 +50,6 @@ const DocumentList: React.FC<DocumentListProps> = ({ onSelectDocument, selectedI
       setSelectedRowKeys([]);
     }
   }, [selectedId]);
-
-  const handleUpload = async (file: RcFile) => {
-    try {
-      await dispatch(uploadDocument(file));
-      message.success('上传成功');
-      setFileList([]);
-    } catch (error) {
-      message.error('上传失败');
-    }
-    return false;
-  };
 
   const handleDelete = (id: number) => {
     dispatch(deleteDocument(id));
@@ -109,31 +97,29 @@ const DocumentList: React.FC<DocumentListProps> = ({ onSelectDocument, selectedI
   ];
 
   return (
-    <Card title="文档列表">
-      <Dragger
-        fileList={fileList}
-        beforeUpload={handleUpload}
-        onChange={({ fileList }) => setFileList(fileList)}
-        showUploadList={false}
-      >
-        <p className="ant-upload-drag-icon">
-          <UploadOutlined />
-        </p>
-        <p className="ant-upload-text">点击或拖拽文件到此区域上传</p>
-      </Dragger>
+    <Card
+      title={
+        <div className="flex justify-between items-center">
+          <span>已加载文档列表</span>
+          <span className="text-sm text-gray-500">
+            共 {loadedDocuments.length} 个文档
+          </span>
+        </div>
+      }
+    >
       <Table
         style={{ marginTop: 16 }}
         loading={loading}
         rowKey="id"
         columns={columns}
-        dataSource={documents}
+        dataSource={loadedDocuments}
         pagination={false}
         rowSelection={{
           type: 'radio',
           selectedRowKeys,
           onChange: (keys) => {
             setSelectedRowKeys(keys);
-            const selectedDoc = documents.find(doc => doc.id === keys[0]);
+            const selectedDoc = loadedDocuments.find(doc => doc.id === keys[0]);
             if (selectedDoc) {
               onSelectDocument?.(selectedDoc);
             }
@@ -145,9 +131,12 @@ const DocumentList: React.FC<DocumentListProps> = ({ onSelectDocument, selectedI
             onSelectDocument?.(record);
           },
         })}
+        locale={{
+          emptyText: '暂无已加载的文档'
+        }}
       />
     </Card>
   );
 };
 
-export default DocumentList;
+export default ChunkList;

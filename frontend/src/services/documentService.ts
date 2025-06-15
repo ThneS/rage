@@ -1,6 +1,6 @@
 import type { Document, DocumentLoadConfig, FileTypeConfigResponse, LangChainDocument } from '@/types/document';
 import { API_DOCUMENTS_URL } from '@/constants/api';
-import { get, del, upload, post } from '../utils/request';
+import { get, del, upload, post } from '@/utils/request';
 
 export class DocumentService {
   async getDocuments(): Promise<Document[]> {
