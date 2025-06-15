@@ -1,4 +1,4 @@
-import type { DocumentStatus, ConfigField } from "@/types/common_config";
+import type { DocumentStatus } from "@/types/common_config";
 
 export interface Chunk {
   id: number;
@@ -14,25 +14,13 @@ export interface Chunk {
   error_message?: string;
 }
 
-export interface ChunkConfigResponse {
-  name: string;
-  description: string;
-  icon?: string;
-  fields: ConfigField[];
-  default_config: Record<string, any>;
-  group_order: string[];
-}
-
-export interface DocumentChunkConfig extends ChunkConfigResponse {
-  [key: string]: any;  // 允许动态配置项
+export interface ChunkMetaData {
+  source?: string;     // 文档来源
+  page?: number;       // 页码（如果有）
+  chunk_id?: number;   // 分块ID
 }
 
 export interface LangChainChunk {
   page_content: string;  // 文档内容
-  metadata: {
-    source?: string;     // 文档来源
-    page?: number;       // 页码（如果有）
-    chunk_id?: string;   // 分块ID
-    [key: string]: any;  // 其他元数据
-  };
+  metadata: ChunkMetaData;
 }

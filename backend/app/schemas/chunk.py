@@ -71,27 +71,15 @@ class ChunkConfig(BaseModel):
     hash: str = Field(..., description="配置哈希值，用于快速比对")
     created_at: datetime = Field(default_factory=datetime.now, description="配置创建时间")
 
-class ChunkResult(BaseModel):
-    """文档加载结果"""
-    chunks: List[Dict[str, Any]] = Field(default_factory=list, description="文档分块结果")
-    metadata: Dict[str, Any] = Field(default_factory=dict, description="加载元数据")
-    error: Optional[str] = Field(None, description="错误信息")
-    created_at: datetime = Field(default_factory=datetime.now, description="结果创建时间")
-
-class Chunk(ChunkBase):
-    """文档完整模型"""
-    id: int = Field(..., description="文档ID")
-    file_path: str = Field(..., description="文件路径")
-    status: DocumentStatus = Field(default=DocumentStatus.PENDING, description="文档状态")
-    chunk_config: Optional[ChunkConfig] = Field(None, description="分块配置")
-    chunk_result: Optional[ChunkResult] = Field(None, description="分块结果")
-    error_message: Optional[str] = Field(None, description="错误信息")
-    created_at: datetime = Field(..., description="创建时间")
-    updated_at: datetime = Field(..., description="更新时间")
-    processed_at: Optional[datetime] = Field(None, description="处理时间")
-
     class Config:
         from_attributes = True
+
+
+class ChunkMetaData(BaseModel):
+    source: str = Field(..., description="分块的来源")
+    page: Optional[int] = Field(None, description="分块的页码")
+    chunk_id: Optional[int] = Field(None, description="分块的唯一标识符")
+
 
 class LangChainChunk(BaseModel):
     """LangChain文档模型
@@ -100,6 +88,6 @@ class LangChainChunk(BaseModel):
     参考自 langchain.schema.Document
     """
     page_content: str = Field(..., description="文档的主要内容")
-    metadata: Dict[str, Any] = Field(default_factory=dict, description="文档的元数据信息")
+    metadata: ChunkMetaData = Field(default_factory=ChunkMetaData, description="文档的元数据信息")
 
     model_config = {"from_attributes": True}

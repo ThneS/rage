@@ -1,4 +1,4 @@
-import type { DocumentStatus, ConfigField } from "@/types/common_config";
+import type { DocumentStatus } from "@/types/common_config";
 
 export interface Document {
   id: number;
@@ -12,19 +12,6 @@ export interface Document {
   updated_at: string;
   processed_at?: string;
   error_message?: string;
-}
-
-export interface FileTypeConfigResponse {
-  name: string;
-  description: string;
-  icon?: string;
-  fields: ConfigField[];
-  default_config: Record<string, any>;
-  group_order: string[];
-}
-
-export interface DocumentLoadConfig extends FileTypeConfigResponse {
-  [key: string]: any;  // 允许动态配置项
 }
 
 export interface LangChainDocument {

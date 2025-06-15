@@ -41,7 +41,7 @@ CHUNK_CONFIG = ConfigParams(
     icon="file-chunk",
     fields=CHUNK_FIELDS,
     default_config={field.name: field.default for field in CHUNK_FIELDS},
-    allowed_extensions=["pdf", "docx", "xlsx", "csv", "jpg", "jpeg", "png", "txt"],
+    allowed_extensions=["*"],
     group_order=[
         "基本设置",
     ]

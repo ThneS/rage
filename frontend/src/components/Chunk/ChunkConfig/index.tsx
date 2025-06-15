@@ -16,8 +16,7 @@ import {
   Alert,
 } from 'antd';
 import type { Document } from '@/types/document';
-import type { DocumentChunkConfig } from '@/types/chunk';
-import type { ConfigField } from '@/types/common_config';
+import type { ConfigField, ConfigParams } from '@/types/common_config';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { fetchChunkConfig, processChunk } from '@/store/slices/chunkSlice';
 
@@ -87,13 +86,14 @@ const ChunkConfig: React.FC<ChunkConfigProps> = ({
     }
     try {
       // 合并配置信息和表单值
-      const submitConfig: DocumentChunkConfig = {
+      const submitConfig: ConfigParams = {
         ...config,
         default_config: {
           ...config.default_config,
           ...values
         }
       };
+
       await dispatch(processChunk(selectedDocument.id, submitConfig));
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : '处理失败';

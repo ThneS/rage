@@ -1,5 +1,5 @@
 import { message } from 'antd';
-import { API_BASE_URL } from '../constants/api';
+import { API_BASE_URL } from '@/constants/api';
 
 interface ApiResponse<T = any> {
   data: T;

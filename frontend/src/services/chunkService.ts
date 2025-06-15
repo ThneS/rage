@@ -1,12 +1,13 @@
-import type { DocumentChunkConfig, ChunkConfigResponse, LangChainChunk } from '@/types/chunk';
+import type { LangChainChunk } from '@/types/chunk';
+import type { ConfigParams } from '@/types/common_config';
 import { API_CHUNK_URL } from '@/constants/api';
 import { get, post } from '@/utils/request';
 
 
 export class ChunkService {
-  async getChunkConfig(documentId: number,): Promise<ChunkConfigResponse | null> {
+  async getChunkConfig(documentId: number,): Promise<ConfigParams | null> {
     try {
-      return get<ChunkConfigResponse>(`${API_CHUNK_URL}/${documentId}/chunk-config`);
+      return get<ConfigParams>(`${API_CHUNK_URL}/${documentId}/chunk-config`);
     } catch (error) {
       console.error('获取文档列表失败:', error);
       return null;
@@ -15,9 +16,9 @@ export class ChunkService {
 
   async processChunk(
       documentId: number,
-      config: DocumentChunkConfig): Promise<LangChainChunk[]> {
+      config: ConfigParams): Promise<LangChainChunk[]> {
     try {
-      const response = await post<LangChainChunk[]>(`${API_CHUNK_URL}/${documentId}/parse`, { config });
+      const response = await post<LangChainChunk[]>(`${API_CHUNK_URL}/${documentId}/parse`, config);
       return response;
     } catch (error) {
       console.error("分块失败:", error);

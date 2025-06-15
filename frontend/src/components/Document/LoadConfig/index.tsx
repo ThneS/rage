@@ -15,8 +15,7 @@ import {
   Tabs,
 } from 'antd';
 import type { Document } from '@/types/document';
-import type { DocumentLoadConfig } from '@/types/document';
-import type { ConfigField } from '@/types/common_config';
+import type { ConfigField, ConfigParams } from '@/types/common_config';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { processDocument, fetchLoadConfig } from '@/store/slices/documentSlice';
 
@@ -85,7 +84,7 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
       return;
     }
     // 合并配置信息和表单值
-    const submitConfig: DocumentLoadConfig = {
+    const submitConfig: ConfigParams = {
       ...config,
       default_config: {
         ...config.default_config,

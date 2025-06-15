@@ -30,7 +30,6 @@ class Chunk(Base):
     meta_data = Column(JSON, nullable=True)
     config = Column(JSON, nullable=True)
     result = Column(JSON, nullable=True)
-    document = relationship("Document", back_populates="chunks")
 
     def __repr__(self):
         return f"Chunk(id={self.id}, document_id={self.document_id}, page={self.page})"

@@ -1,28 +1,76 @@
+import React, { useState, useMemo } from 'react';
 import { Modal, Tree } from 'antd';
+import type {LangChainChunk} from "@/types/chunk";
 
-const ChunkResultModal = ({ visible, onCancel, result }: any) => {
-  if (!result) return null;
-  // 假设meta_data.document有页码信息，chunks有分块内容
-  const treeData = (result.chunks || []).map((chunk: any) => ({
-    title: `分块编号: ${chunk.chunk_id}`,
-    key: chunk.chunk_id,
-    children: [
-      { title: <span style={{ color: '#888' }}>{chunk.content.slice(0, 30)}...</span>, key: `content-${chunk.chunk_id}` }
-    ]
+interface ChunkResultModalProps {
+  visible: boolean;
+  onCancel: () => void;
+  ChunkResult: LangChainChunk[] | null;
+}
+
+const ChunkResultModal: React.FC<ChunkResultModalProps> = ({
+  visible,
+  onCancel,
+  ChunkResult,
+}) => {
+  // 计算所有页码
+  const pages = useMemo(() => {
+    if (!ChunkResult) return [];
+    const pageSet = new Set<number>();
+    ChunkResult.forEach(chunk => {
+      if (chunk.metadata?.page) pageSet.add(chunk.metadata.page);
+    });
+    return Array.from(pageSet).sort((a, b) => a - b);
+  }, [ChunkResult]);
+
+  // 默认选中第一页
+  const [selectedPage, setSelectedPage] = useState<number>(pages[0] || 1);
+
+  // 目录树数据
+  const treeData = pages.map(page => ({
+    title: `页码: ${page}`,
+    key: page,
+    isLeaf: true,
   }));
+
+  // 当前页的分块
+  const pageChunks = (ChunkResult || []).filter(chunk => chunk.metadata?.page === selectedPage);
+
   return (
-    <Modal open={visible} onCancel={onCancel} footer={null} width={800} title={`关联文档: ${result.meta_data?.document?.filename || ''}`}>
-      <div style={{ display: 'flex', height: 400 }}>
+    <Modal
+      open={visible}
+      onCancel={onCancel}
+      footer={null}
+      width={900}
+      title="分块结果"
+    >
+      <div style={{ display: 'flex', height: 500 }}>
+        {/* 左侧目录树 */}
         <div style={{ flex: 1, overflow: 'auto', borderRight: '1px solid #eee', paddingRight: 16 }}>
-          <Tree treeData={treeData} defaultExpandAll />
+          <Tree
+            treeData={treeData}
+            defaultExpandAll
+            selectedKeys={[selectedPage]}
+            onSelect={(keys) => {
+              const page = Number(keys[0]);
+              if (!isNaN(page)) setSelectedPage(page);
+            }}
+          />
         </div>
+        {/* 右侧分块内容 */}
         <div style={{ flex: 2, overflow: 'auto', paddingLeft: 16 }}>
-          {result.chunks.map((chunk: any) => (
-            <div key={chunk.chunk_id} style={{ marginBottom: 16 }}>
-              <b>分块编号: {chunk.chunk_id}</b>
-              <div style={{ whiteSpace: 'pre-wrap', background: '#fafafa', padding: 8, borderRadius: 4 }}>{chunk.content}</div>
-            </div>
-          ))}
+          {pageChunks.length === 0 ? (
+            <div>该页暂无分块</div>
+          ) : (
+            pageChunks.map((chunk) => (
+              <div key={chunk.metadata.chunk_id} style={{ marginBottom: 16 }}>
+                <b>分块编号: {chunk.metadata.chunk_id}</b>
+                <div style={{ whiteSpace: 'pre-wrap', background: '#fafafa', padding: 8, borderRadius: 4 }}>
+                  {chunk.page_content}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </Modal>

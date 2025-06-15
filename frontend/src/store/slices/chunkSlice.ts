@@ -1,12 +1,11 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { chunkService } from '@/services/chunkService';
-import type { ChunkConfigResponse } from '@/types/chunk';
 import type { AppThunk, AppDispatch } from '@/store/types';
 import type { LangChainChunk } from '@/types/chunk';
-
+import type { ConfigParams } from '@/types/common_config';
 export interface ChunkState {
-  config: ChunkConfigResponse | null;
-  result: any;
+  config: ConfigParams | null;
+  result: LangChainChunk[] | null;
   loading: boolean;
   error: string | null;
 }
@@ -22,7 +21,7 @@ const chunkSlice = createSlice({
   name: 'chunk',
   initialState,
   reducers: {
-    setConfig: (state, action: PayloadAction<ChunkConfigResponse | null>) => {
+    setConfig: (state, action: PayloadAction<ConfigParams | null>) => {
       state.config = action.payload;
       state.error = null;
     },
@@ -54,12 +53,11 @@ export const fetchChunkConfig = (documentId: number): AppThunk => async (dispatc
   }
 };
 
-export const processChunk = (documentId: number, config: any): AppThunk<Promise<void>> => async (dispatch: AppDispatch) => {
+export const processChunk = (documentId: number, config: ConfigParams): AppThunk<Promise<void>> => async (dispatch: AppDispatch) => {
   try {
     dispatch(setLoading(true));
     const result = await chunkService.processChunk(documentId, config);
     dispatch(setChunkResult(result));
-    await dispatch(fetchChunkConfig(documentId));
   } catch (error) {
     dispatch(setError(error instanceof Error ? error.message : '处理文档失败'));
     throw error;

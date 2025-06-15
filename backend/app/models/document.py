@@ -27,9 +27,7 @@ class Document(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     processed_at = Column(DateTime(timezone=True), nullable=True)
-
-    # 关联字段
-    chunks = relationship("Chunk", back_populates="document")
+    chunk_id = Column(Integer, nullable=True)
 
 
     def __repr__(self):

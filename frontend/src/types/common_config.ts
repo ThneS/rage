@@ -23,6 +23,15 @@ export interface ConfigField {
   dependencies?: Record<string, any>;
 }
 
+export interface ConfigParams {
+  name: string;
+  description: string;
+  icon?: string;
+  fields: ConfigField[];
+  default_config: Record<string, any>;
+  group_order: string[];
+}
+
 export type DocumentStatus =
   | 'pending'
   | 'loaded'
