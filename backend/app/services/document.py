@@ -179,21 +179,20 @@ class DocumentService:
             if file_type != "pdf":
                 raise HTTPException(status_code=400, detail="仅支持PDF文档处理")
             loader_tool = config.get("loader_tool", "langchain")
-            parse_result: List[LangChainDocument] = []
             parser = None
             if loader_tool == "langchain":
-                parser = LangchainParser()
+                parser = LangchainParser(config)
             elif loader_tool == "llamaindex":
-                parser = LlamaIndexParser()
+                parser = LlamaIndexParser(config)
             else:
                 raise HTTPException(status_code=400, detail=f"不支持的加载工具: {loader_tool}")
             try:
-                parse_result = parser.parse(file_path, config)
+                parse_result: List[LangChainDocument] = parser.parse(file_path)
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"处理文档失败: {str(e)}")
             # 存入 metadata
             document.meta_data = document.meta_data or {}
-            document.meta_data["parse_result"] = parse_result
+            document.result = [result.model_dump() for result in parse_result]
             # 更新文档状态
             document.status = DocumentStatus.LOADED
             # 将config转为json进行存储

@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Optional, Dict, Any, List
 from pydantic import BaseModel, Field, field_validator
 from app.schemas.common_config import DocumentStatus
+from langchain_core.documents import Document as LangchainDocumentBase
 
 class DocumentBase(BaseModel):
     """文档基础模型"""
@@ -103,3 +104,7 @@ class LangChainDocument(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict, description="文档的元数据信息")
 
     model_config = {"from_attributes": True}
+
+    def to_langchain_document(self) -> LangchainDocumentBase:
+        document = LangchainDocumentBase(page_content=self.page_content, metadata=self.metadata)
+        return document

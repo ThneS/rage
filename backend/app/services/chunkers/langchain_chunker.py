@@ -1,18 +1,16 @@
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_text_splitters import CharacterTextSplitter
+from typing import List
+from app.schemas.common_config import ConfigParams
+from app.schemas.chunk import LangChainChunk
+from app.schemas.document import LangChainDocument
 
-GAME_CODE = """
+class LangChainChunker:
+    def __init__(self, config: ConfigParams):
+        self.config = config
 
-"""
-
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=1000,  # 每个块的大小
-    chunk_overlap=00,  # 相邻块之间的重叠大小
-    # separators=["\n\n", "\n", " ", ""]  # 分割符列表
-)
-
-# 执行分块
-text_chunks = text_splitter.create_documents([GAME_CODE])
-chunks = text_splitter.split_documents(text_chunks)
-
-print(chunks)
+    def chunk(self, document:  LangChainDocument) -> List[LangChainChunk]:
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=self.config.get("chunk_size", 1000),
+            chunk_overlap=self.config.get("chunk_overlap", 0))
+        chunks = text_splitter.split_documents([document.to_langchain_document()])
+        return [LangChainChunk(page_content=doc.page_content, metadata=doc.metadata) for doc in chunks]

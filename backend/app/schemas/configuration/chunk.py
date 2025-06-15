@@ -21,12 +21,12 @@ CHUNK_FIELDS = [
         name="chunk_tool",
         label="分块工具",
         type="select",
-        default="langchain_character",
+        default="langchain_recursive",
         options=[
-            {"label": "LangChain-CharacterTextSplitter", "value": "langchain_character"},
             {"label": "LangChain-RecursiveCharacterTextSplitter", "value": "langchain_recursive"},
-            {"label": "LlamaIndex-自定义", "value": "llamaindex_custom"},
+            {"label": "LangChain-CharacterTextSplitter", "value": "langchain_character"},
             {"label": "Embedding+语义聚类", "value": "semantic_cluster"},
+            {"label": "LlamaIndex-自定义", "value": "llamaindex_custom"},
         ],
         description="选择分块实现工具",
         group="基本设置"
@@ -90,7 +90,7 @@ CHUNK_CONFIG = ConfigParams(
     allowed_extensions=["*"],
     group_order=[
         "基本设置",
-        "分块目标",
+        # "分块目标",
         "高级参数",
     ]
 )

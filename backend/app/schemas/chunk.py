@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Optional, Dict, Any, List
 from pydantic import BaseModel, Field, field_validator
-from app.schemas.common_config import DocumentStatus
 
 class ChunkBase(BaseModel):
     """文档基础模型"""

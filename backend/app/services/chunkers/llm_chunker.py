@@ -2,6 +2,8 @@ from typing import List, Dict, Any
 from dataclasses import dataclass
 from openai import OpenAI
 from app.core.config import settings
+from app.schemas.common_config import ConfigParams
+from app.schemas.chunk import LangChainChunk
 
 @dataclass
 class Chunk:
@@ -9,10 +11,11 @@ class Chunk:
     metadata: Dict[str, Any] = None
 
 class LLMChunker:
-    def __init__(self):
+    def __init__(self, config: ConfigParams):
         self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        self.config = config
 
-    def split(self, content: str) -> List[Chunk]:
+    def chunk(self, content: str) -> List[LangChainChunk]:
         prompt = f"""请将以下文本分成有意义的段落，每个段落应该是一个完整的语义单元。
         文本内容：
         {content}
