@@ -16,13 +16,6 @@ const ChunkPage: React.FC = () => {
     setSelectedDocument(document);
   };
 
-  // // 监听处理结果变化自动弹窗
-  // React.useEffect(() => {
-  //   if (chunkResult) {
-  //     setModalVisible(true);
-  //   }
-  // }, [chunkResult]);
-
   // 查看处理结果
   const handleViewChunk = () => setModalVisible(true);
 

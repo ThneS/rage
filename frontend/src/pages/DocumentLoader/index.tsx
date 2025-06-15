@@ -16,13 +16,6 @@ const DocumentLoader: React.FC = () => {
     setSelectedDocument(document);
   };
 
-  // // 监听 loadResult 变化自动弹窗
-  // React.useEffect(() => {
-  //   if (loadResult) {
-  //     setModalVisible(true);
-  //   }
-  // }, [loadResult]);
-
   // 查看加载结果
   const handleViewLoad = () => setModalVisible(true);
 

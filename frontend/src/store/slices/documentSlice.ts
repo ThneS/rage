@@ -4,6 +4,7 @@ import type { AppThunk, AppDispatch } from '@/store/types';
 import { documentService } from '@/services/documentService';
 import type { Document, LangChainDocument } from '@/types/document';
 import type { ConfigParams } from '@/types/common_config';
+import { DocumentStatus } from '@/types/common_config';
 
 export interface DocumentState {
   documents: Document[];
@@ -130,7 +131,7 @@ export const pollDocumentStatus = (documentId: number): AppThunk => async (dispa
 
       if (document) {
         // 如果文档状态是处理中，继续轮询
-        if (document.status === 'pending' && attempts < maxAttempts) {
+        if (document.status === DocumentStatus.PENDING && attempts < maxAttempts) {
           attempts++;
           dispatch(setDocuments(documents));
           setTimeout(poll, pollInterval);

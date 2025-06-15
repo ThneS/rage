@@ -32,13 +32,16 @@ export interface ConfigParams {
   group_order: string[];
 }
 
-export type DocumentStatus =
-  | 'pending'
-  | 'loaded'
-  | 'chunked'
-  | 'embedded'
-  | 'indexed'
-  | 'error';
+export const DocumentStatus = {
+  PENDING: 'pending',
+  LOADED: 'loaded',
+  CHUNKED: 'chunked',
+  EMBEDDED: 'embedded',
+  INDEXED: 'indexed',
+  ERROR: 'error',
+} as const;
+
+export type DocumentStatus = typeof DocumentStatus[keyof typeof DocumentStatus];
 
 export interface StatusConfig {
   color: string;

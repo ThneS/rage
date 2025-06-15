@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from app.models.document import Document
 from app.models.chunk import Chunk
-from app.schemas.chunk import LangChainChunk, ChunkMetaData
+from app.schemas.chunk import LangChainChunk, ChunkMetaData, DocumentStatus
 from app.schemas.common_config import ConfigParams
 from app.schemas.configuration.chunk import get_default_config
 from typing import List
@@ -74,9 +74,13 @@ class ChunkService:
             self.db.commit()
             self.db.refresh(chunk)
             document.chunk_id = chunk.id
+            document.status = DocumentStatus.CHUNKED
             self.db.commit()
             self.db.refresh(document)
         else:
+            document.status = DocumentStatus.CHUNKED
+            self.db.commit()
+            self.db.refresh(document)
             chunk.config = config.model_dump()
             chunk.result = result
             self.db.commit()

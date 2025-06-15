@@ -3,6 +3,7 @@ import { chunkService } from '@/services/chunkService';
 import type { AppThunk, AppDispatch } from '@/store/types';
 import type { LangChainChunk } from '@/types/chunk';
 import type { ConfigParams } from '@/types/common_config';
+import {fetchDocuments} from '@/store/slices/documentSlice';
 export interface ChunkState {
   config: ConfigParams | null;
   result: LangChainChunk[] | null;
@@ -58,6 +59,7 @@ export const processChunk = (documentId: number, config: ConfigParams): AppThunk
     dispatch(setLoading(true));
     const result = await chunkService.processChunk(documentId, config);
     dispatch(setChunkResult(result));
+    dispatch(fetchDocuments());
   } catch (error) {
     dispatch(setError(error instanceof Error ? error.message : '处理文档失败'));
     throw error;
