@@ -28,6 +28,7 @@ class Document(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     processed_at = Column(DateTime(timezone=True), nullable=True)
     chunk_id = Column(Integer, nullable=True)
+    embedding_id = Column(Integer, nullable=True)
 
 
     def __repr__(self):

@@ -33,7 +33,7 @@ const menuItems = [
   {
     key: '/embedding',
     icon: <ApiOutlined />,
-    label: '嵌入配置',
+    label: '文档嵌入',
   },
   {
     key: '/indexing',

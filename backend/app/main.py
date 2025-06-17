@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.v1.endpoints import documents, chunks
+from app.api.v1.endpoints import documents, chunks, embeddings
 from app.core.database import engine, Base
 from fastapi.responses import JSONResponse
 from fastapi import Request, HTTPException
@@ -65,6 +65,12 @@ app.include_router(
     chunks.router,
     prefix=f"{settings.API_V1_STR}/chunks",
     tags=["chunks"]
+)
+
+app.include_router(
+    embeddings.router,
+    prefix=f"{settings.API_V1_STR}/embeddings",
+    tags=["embeddings"]
 )
 
 @app.get("/")

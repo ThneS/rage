@@ -4,6 +4,7 @@ import { Navigate } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
 import DocumentLoader from '@/pages/DocumentLoader';
 import ChunkPage from '@/pages/ChunkPage';
+import EmbeddingPage from '@/pages/EmbeddingPage';
 
 export const routes: RouteObject[] = [
   {
@@ -21,6 +22,10 @@ export const routes: RouteObject[] = [
       {
         path: 'chunk',
         element: <ChunkPage />
+      },
+      {
+        path: 'embedding',
+        element: <EmbeddingPage />
       },
       {
         path: '*',

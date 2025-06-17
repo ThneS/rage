@@ -1,6 +1,6 @@
 from typing import Dict, Any, List
 from pydantic import Field
-from app.schemas.common_config import ConfigField, ConfigFieldOption, ConfigParams
+from app.schemas.common_config import ConfigField, ConfigFieldOption, ConfigParams, ConfigDependency
 
 # PDF配置字段
 PDF_FIELDS = [
@@ -27,7 +27,7 @@ PDF_FIELDS = [
         type="switch",
         default=True,
         group="基本设置",
-        dependencies={"field": "loader_tool", "value": ["pypdf", "pdfplumber", "langchain"]}
+        dependencies=ConfigDependency(field="loader_tool", value=["pypdf", "pdfplumber", "langchain"])
     ),
     ConfigField(
         name="page_range",
@@ -36,7 +36,7 @@ PDF_FIELDS = [
         default="all",
         placeholder="all 或 1-5,7,9-12",
         group="页面设置",
-        dependencies={"field": "loader_tool", "value": ["pypdf", "pdfplumber", "langchain"]}
+        dependencies=ConfigDependency(field="loader_tool", value=["pypdf", "pdfplumber", "langchain"])
     ),
     ConfigField(
         name="password",
@@ -45,7 +45,7 @@ PDF_FIELDS = [
         default=None,
         placeholder="请输入PDF密码",
         group="安全设置",
-        dependencies={"field": "loader_tool", "value": ["pypdf", "pdfplumber", "langchain"]}
+        dependencies=ConfigDependency(field="loader_tool", value=["pypdf", "pdfplumber", "langchain"])
     ),
     # pdfplumber
     ConfigField(
@@ -54,7 +54,7 @@ PDF_FIELDS = [
         type="switch",
         default=True,
         group="表格设置",
-        dependencies={"field": "loader_tool", "value": ["pdfplumber", "langchain"]}
+        dependencies=ConfigDependency(field="loader_tool", value=["pdfplumber", "langchain"])
     ),
     ConfigField(
         name="table_tool",
@@ -68,7 +68,7 @@ PDF_FIELDS = [
             ConfigFieldOption(label="LlamaParse", value="llamaParse"),
         ],
         group="表格设置",
-        dependencies={"field": "loader_tool", "value": ["pdfplumber", "langchain"]}
+        dependencies=ConfigDependency(field="loader_tool", value=["pdfplumber", "langchain"])
     ),
     ConfigField(
         name="merge_tables",
@@ -76,7 +76,7 @@ PDF_FIELDS = [
         type="switch",
         default=False,
         group="表格设置",
-        dependencies={"field": "loader_tool", "value": ["pdfplumber", "langchain"]}
+        dependencies=ConfigDependency(field="loader_tool", value=["pdfplumber", "langchain"])
     ),
     # langchain
     ConfigField(
@@ -88,7 +88,7 @@ PDF_FIELDS = [
         max=5000,
         step=100,
         group="大模型/分块",
-        dependencies={"field": "loader_tool", "value": "langchain"}
+        dependencies=ConfigDependency(field="loader_tool", value="langchain")
     ),
     ConfigField(
         name="chunk_overlap",
@@ -99,7 +99,7 @@ PDF_FIELDS = [
         max=1000,
         step=50,
         group="大模型/分块",
-        dependencies={"field": "loader_tool", "value": "langchain"}
+        dependencies=ConfigDependency(field="loader_tool", value="langchain")
     ),
     ConfigField(
         name="semantic_split",
@@ -107,7 +107,7 @@ PDF_FIELDS = [
         type="switch",
         default=False,
         group="大模型/分块",
-        dependencies={"field": "loader_tool", "value": "langchain"}
+        dependencies=ConfigDependency(field="loader_tool", value="langchain")
     ),
     ConfigField(
         name="llm_model",
@@ -115,7 +115,7 @@ PDF_FIELDS = [
         type="text",
         default="",
         group="大模型/分块",
-        dependencies={"field": "loader_tool", "value": "langchain"}
+        dependencies=ConfigDependency(field="loader_tool", value="langchain")
     ),
     ConfigField(
         name="prompt_template",
@@ -123,7 +123,7 @@ PDF_FIELDS = [
         type="textarea",
         default="",
         group="大模型/分块",
-        dependencies={"field": "loader_tool", "value": "langchain"}
+        dependencies=ConfigDependency(field="loader_tool", value="langchain")
     ),
     ConfigField(
         name="embedding_model",
@@ -131,7 +131,7 @@ PDF_FIELDS = [
         type="text",
         default="",
         group="大模型/分块",
-        dependencies={"field": "semantic_split", "value": True}
+        dependencies=ConfigDependency(field="semantic_split", value=True)
     ),
     ConfigField(
         name="ocr_enabled",
@@ -139,7 +139,7 @@ PDF_FIELDS = [
         type="switch",
         default=False,
         group="OCR设置",
-        dependencies={"field": "loader_tool", "value": "langchain"}
+        dependencies=ConfigDependency(field="loader_tool", value="langchain")
     ),
     ConfigField(
         name="ocr_engine",
@@ -151,7 +151,7 @@ PDF_FIELDS = [
             ConfigFieldOption(label="EasyOCR", value="easyocr"),
         ],
         group="OCR设置",
-        dependencies={"field": "loader_tool", "value": "langchain"}
+        dependencies=ConfigDependency(field="loader_tool", value="langchain")
     ),
     ConfigField(
         name="ocr_language",
@@ -163,7 +163,7 @@ PDF_FIELDS = [
             ConfigFieldOption(label="英文", value="eng"),
             ConfigFieldOption(label="中英混合", value="chi_sim+eng"),
         ],
-        dependencies={"field": "ocr_enabled", "value": True},
+        dependencies=ConfigDependency(field="ocr_enabled", value=True),
         group="OCR设置"
     ),
     ConfigField(
@@ -175,7 +175,7 @@ PDF_FIELDS = [
         max=255,
         step=1,
         group="OCR设置",
-        dependencies={"field": "ocr_enabled", "value": True}
+        dependencies=ConfigDependency(field="ocr_enabled", value=True)
     ),
     ConfigField(
         name="extract_images",
@@ -387,7 +387,7 @@ IMAGE_FIELDS = [
             ConfigFieldOption(label="英文", value="eng", description="英语"),
             ConfigFieldOption(label="中文简体+英文", value="chi_sim+eng", description="简体中文和英语"),
         ],
-        dependencies={"field": "ocr_enabled", "value": True},
+        dependencies=ConfigDependency(field="ocr_enabled", value=True),
         group="OCR设置"
     ),
     ConfigField(
@@ -413,7 +413,7 @@ IMAGE_FIELDS = [
         description="图片的最大尺寸，格式：宽,高",
         default=None,
         placeholder="例如：1920,1080",
-        dependencies={"field": "resize", "value": True},
+        dependencies=ConfigDependency(field="resize", value=True),
         group="图片处理"
     )
 ]

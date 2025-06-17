@@ -24,7 +24,7 @@ const Logo = styled.div`
 const steps = [
   { title: '文档加载', path: '/document-loader' },
   { title: '文档分块', path: '/chunk' },
-  { title: '嵌入配置', path: '/embedding' },
+  { title: '文档嵌入', path: '/embedding' },
   { title: '建立索引', path: '/indexing' },
   { title: '检索前处理', path: '/pre-retrieval' },
   { title: '检索后处理', path: '/post-retrieval' },

@@ -1,5 +1,5 @@
 # 分块相关配置，可根据需要扩展
-from app.schemas.common_config import ConfigField, ConfigParams
+from app.schemas.common_config import ConfigField, ConfigParams, ConfigFieldOption, ConfigDependency
 
 CHUNK_FIELDS = [
     ConfigField(
@@ -8,11 +8,11 @@ CHUNK_FIELDS = [
         type="select",
         default="fixed_token",
         options=[
-            {"label": "按字符数", "value": "fixed_char"},
-            {"label": "按Token数", "value": "fixed_token"},
-            {"label": "按段落/语义/标题层级", "value": "semantic"},
-            {"label": "按代码语法块", "value": "code_block"},
-            {"label": "智能分块", "value": "smart"},
+            ConfigFieldOption(label="按字符数", value="fixed_char"),
+            ConfigFieldOption(label="按Token数", value="fixed_token"),
+            ConfigFieldOption(label="按段落/语义/标题层级", value="semantic"),
+            ConfigFieldOption(label="按代码语法块", value="code_block"),
+            ConfigFieldOption(label="智能分块", value="smart"),
         ],
         description="选择分块方式，如按Token数、按段落、按代码块等",
         group="基本设置"
@@ -23,10 +23,10 @@ CHUNK_FIELDS = [
         type="select",
         default="langchain_recursive",
         options=[
-            {"label": "LangChain-RecursiveCharacterTextSplitter", "value": "langchain_recursive"},
-            {"label": "LangChain-CharacterTextSplitter", "value": "langchain_character"},
-            {"label": "Embedding+语义聚类", "value": "semantic_cluster"},
-            {"label": "LlamaIndex-自定义", "value": "llamaindex_custom"},
+            ConfigFieldOption(label="LangChain-RecursiveCharacterTextSplitter", value="langchain_recursive"),
+            ConfigFieldOption(label="LangChain-CharacterTextSplitter", value="langchain_character"),
+            ConfigFieldOption(label="Embedding+语义聚类", value="semantic_cluster"),
+            ConfigFieldOption(label="LlamaIndex-自定义", value="llamaindex_custom"),
         ],
         description="选择分块实现工具",
         group="基本设置"
@@ -37,9 +37,9 @@ CHUNK_FIELDS = [
         type="checkbox",
         default=["semantic_integrity", "overlap"],
         options=[
-            {"label": "保持段落/语义完整性", "value": "semantic_integrity"},
-            {"label": "建立块之间的关联关系", "value": "overlap"},
-            {"label": "附加元数据", "value": "meta"},
+            ConfigFieldOption(label="保持段落/语义完整性", value="semantic_integrity"),
+            ConfigFieldOption(label="建立块之间的关联关系", value="overlap"),
+            ConfigFieldOption(label="附加元数据", value="meta"),
         ],
         description="分块的目标，可多选",
         group="分块目标"
@@ -54,7 +54,7 @@ CHUNK_FIELDS = [
         step=100,
         description="每块的Token数，仅在按Token分块时有效",
         group="高级参数",
-        dependencies={"field": "chunk_method", "value": ["fixed_token"]}
+        dependencies=ConfigDependency(field="chunk_method", value=["fixed_token"])
     ),
     ConfigField(
         name="char_size",
@@ -66,7 +66,7 @@ CHUNK_FIELDS = [
         step=100,
         description="每块的字符数，仅在按字符分块时有效",
         group="高级参数",
-        dependencies={"field": "chunk_method", "value": ["fixed_char"]}
+        dependencies=ConfigDependency(field="chunk_method", value=["fixed_char"])
     ),
     ConfigField(
         name="overlap",

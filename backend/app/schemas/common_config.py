@@ -16,6 +16,10 @@ class ConfigFieldOption(BaseModel):
     value: Any = Field(..., description="选项值")
     description: Optional[str] = Field(None, description="选项描述")
 
+class ConfigDependency(BaseModel):
+    field: str = Field(..., description="依赖字段")
+    value: Any = Field(..., description="依赖值")
+
 class ConfigField(BaseModel):
     name: str = Field(..., description="字段名称")
     label: str = Field(..., description="字段标签")
@@ -32,7 +36,7 @@ class ConfigField(BaseModel):
     disabled: bool = Field(default=False, description="是否禁用")
     hidden: bool = Field(default=False, description="是否隐藏")
     group: Optional[str] = Field(None, description="分组名称")
-    dependencies: Optional[Dict[str, Any]] = Field(None, description="依赖关系，例如：{'field': 'extract_text', 'value': True}")
+    dependencies: Optional[ConfigDependency] = Field(None, description="依赖关系")
 
 class ConfigParams(BaseModel):
     """文件类型配置响应"""

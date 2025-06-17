@@ -4,6 +4,11 @@ export interface ConfigFieldOption {
   description?: string;
 }
 
+export interface ConfigDependency {
+  field: string;
+  value: any;
+}
+
 export interface ConfigField {
   name: string;
   label: string;
@@ -20,7 +25,7 @@ export interface ConfigField {
   disabled?: boolean;
   hidden?: boolean;
   group?: string;
-  dependencies?: Record<string, any>;
+  dependencies?: ConfigDependency;
 }
 
 export interface ConfigParams {
