@@ -30,7 +30,7 @@ const EmbeddingConfig: React.FC<EmbeddingConfigProps> = ({
 }) => {
   const [form] = Form.useForm();
   const { message } = App.useApp();
-  const { config, loading, error } = useAppSelector(state => state.chunk);
+  const { config, loading, error } = useAppSelector(state => state.embedding);
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [initialValues, setInitialValues] = useState<Record<string, any>>({});
   const dispatch = useAppDispatch();

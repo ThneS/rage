@@ -4,7 +4,7 @@ from app.models.embedding import Embedding
 from app.schemas.embedding import LangChainEmbedding
 from app.schemas.document import LangChainDocument
 from app.schemas.common_config import ConfigParams, DocumentStatus
-from app.schemas.configuration.chunk import get_default_config
+from app.schemas.configuration.embedding import get_default_config
 from typing import List
 from fastapi import HTTPException
 from app.services.embeddinger.LangChainEmbe import Embeddinger
