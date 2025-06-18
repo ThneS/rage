@@ -33,7 +33,7 @@ const EmbeddingResultModal: React.FC<EmbeddingResultModalProps> = ({
     isLeaf: true,
   }));
 
-  // 当前页的分块
+  // 当前页的嵌入的数据
   const pageEmbeddings = (EmbeddingResult || []).filter(embedding => embedding.metadata?.page === selectedPage);
 
   return (
@@ -42,7 +42,7 @@ const EmbeddingResultModal: React.FC<EmbeddingResultModalProps> = ({
       onCancel={onCancel}
       footer={null}
       width={900}
-      title="分块结果"
+      title="嵌入结果"
     >
       <div style={{ display: 'flex', height: 500 }}>
         {/* 左侧目录树 */}
@@ -57,14 +57,14 @@ const EmbeddingResultModal: React.FC<EmbeddingResultModalProps> = ({
             }}
           />
         </div>
-        {/* 右侧分块内容 */}
+        {/* 右侧内容 */}
         <div style={{ flex: 2, overflow: 'auto', paddingLeft: 16 }}>
           {pageEmbeddings.length === 0 ? (
-            <div>该页暂无分块</div>
+            <div>该页暂无结果</div>
           ) : (
             pageEmbeddings.map((embedding) => (
               <div key={embedding.metadata.embedding_id} style={{ marginBottom: 16 }}>
-                <b>分块编号: {embedding.metadata.embedding_id}</b>
+                <b>编号: {embedding.metadata.embedding_id}</b>
                 <div style={{ whiteSpace: 'pre-wrap', background: '#fafafa', padding: 8, borderRadius: 4 }}>
                   {embedding.embedding}
                 </div>

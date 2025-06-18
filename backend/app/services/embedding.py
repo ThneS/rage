@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from app.models.document import Document
+from app.models.chunk import Chunk
 from app.models.embedding import Embedding
 from app.schemas.embedding import LangChainEmbedding
 from app.schemas.document import LangChainDocument
@@ -8,6 +9,7 @@ from app.schemas.configuration.embedding import get_default_config
 from typing import List
 from fastapi import HTTPException
 from app.services.embeddinger.LangChainEmbe import Embeddinger
+from app.schemas.chunk import LangChainChunk
 
 class EmbeddingService:
     def __init__(self, db: Session):
@@ -47,17 +49,21 @@ class EmbeddingService:
         document = self.db.query(Document).filter(Document.id == document_id).first()
         if not document:
             raise Exception("文档不存在")
+        chunk = self.db.query(Chunk).filter(Chunk.id == document.chunk_id).first()
+        if not chunk:
+            raise Exception("分块不存在")
+        chunks: List[LangChainChunk] = [LangChainChunk.model_validate(chunk) for chunk in chunk.result]
+        results = Embeddinger(config).embedding(chunks)
         # 2. 获取或创建 embedding
         if not document.embedding_id:
             # 如果不存在 embedding，则创建新的 embedding 配置
-            result = Embeddinger(config).embedding(document.content)
             embedding = Embedding(
                 document_id=document_id,
                 config=config.model_dump(),
                 meta_data={
                     "document": {"id": document.id, "filename": document.filename}
                 },
-                result=[]
+                result= [result.model_dump() for result in results]
             )
             self.db.add(embedding)
             self.db.commit()
@@ -73,4 +79,4 @@ class EmbeddingService:
             document.status = DocumentStatus.EMBEDDED
             self.db.commit()
             self.db.refresh(document)
-        pass
+        return results
