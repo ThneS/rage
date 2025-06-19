@@ -1,5 +1,5 @@
 import type { LangChainChunk } from '@/types/chunk';
-import type { ConfigParams } from '@/types/common_config';
+import type { ConfigParams } from '@/types/commonConfig';
 import { API_CHUNK_URL } from '@/constants/api';
 import { get, post } from '@/utils/request';
 

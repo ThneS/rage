@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Form, Space, Tooltip, Typography, Tabs, Alert, Input, InputNumber, Select, Switch, Radio, Checkbox } from 'antd';
-import type { ConfigField, ConfigParams } from '@/types/common_config';
+import type { ConfigField, ConfigParams } from '@/types/commonConfig';
 
 const { Text } = Typography;
 const { Option } = Select;

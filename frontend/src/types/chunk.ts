@@ -1,4 +1,4 @@
-import type { DocumentStatus } from "@/types/common_config";
+import type { DocumentStatus } from "@/types/commonConfig";
 
 export interface Chunk {
   id: number;

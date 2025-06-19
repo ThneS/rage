@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.v1.endpoints import documents, chunks, embeddings, store
+from app.api.v1.endpoints import documents, chunks, embeddings
 from app.core.database import engine, Base
 from fastapi.responses import JSONResponse
 from fastapi import Request, HTTPException
@@ -10,6 +10,8 @@ import os
 from dotenv import load_dotenv
 import logging
 from contextlib import asynccontextmanager
+
+from app.api.v1.endpoints import vec_store
 
 # 配置日志
 logger = logging.getLogger(__name__)
@@ -73,9 +75,9 @@ app.include_router(
     tags=["embeddings"]
 )
 app.include_router(
-    store.router,
-    prefix=f"{settings.API_V1_STR}/store",
-    tags=["store"]
+    vec_store.router,
+    prefix=f"{settings.API_V1_STR}/vec-store",
+    tags=["vec-store"]
 )
 @app.get("/")
 async def root():

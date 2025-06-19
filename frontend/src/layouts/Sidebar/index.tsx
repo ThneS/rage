@@ -36,9 +36,9 @@ const menuItems = [
     label: '文档嵌入',
   },
   {
-    key: '/indexing',
+    key: '/vec-store',
     icon: <DatabaseOutlined />,
-    label: '建立索引',
+    label: '向量存储',
   },
   {
     key: '/pre-retrieval',

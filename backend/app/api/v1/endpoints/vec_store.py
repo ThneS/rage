@@ -9,7 +9,7 @@ from typing import List
 
 router = APIRouter()
 
-@router.get("/{document_id}/store-config", response_model=ResponseModel[ConfigParams])
+@router.get("/{document_id}/vec-store-config", response_model=ResponseModel[ConfigParams])
 def get_store_config(document_id: int, db: Session = Depends(get_db)):
     """获取指定文档的存储参数配置"""
     service = StoreService(db)
@@ -18,14 +18,14 @@ def get_store_config(document_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="未找到存储配置")
     return ResponseModel[ConfigParams](data=config)
 
-@router.post("/{document_id}/store", response_model=ResponseModel[List[LangChainStore]])
-def store(
+@router.post("/{document_id}/parse", response_model=ResponseModel[List[LangChainStore]])
+def parse(
     document_id: int,
     config: ConfigParams = Body(..., description="加载配置参数"),
     db: Session = Depends(get_db)):
-    """存储处理"""
+    """解析"""
     service = StoreService(db)
-    result = service.do_store(document_id, config)
+    result = service.do_parse(document_id, config)
     return ResponseModel[List[LangChainStore]](data=result)
 
 @router.get("/{document_id}/search", response_model=ResponseModel[str])

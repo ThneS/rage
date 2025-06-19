@@ -19,7 +19,7 @@ import type { UploadFile, RcFile } from 'antd/es/upload';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { fetchDocuments, uploadDocument, deleteDocument } from '@/store/slices/documentSlice';
 import type { Document } from '@/types/document';
-import { documentStatusConfig, type DocumentStatus } from '@/types/common_config';
+import { documentStatusConfig, type DocumentStatus } from '@/types/commonConfig';
 
 const { Dragger } = Upload;
 

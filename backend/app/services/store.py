@@ -43,10 +43,10 @@ class StoreService:
         # 3. 返回 store 配置
         return ConfigParams.model_validate(store.config)
 
-    def do_store(self, document_id: int, config: ConfigParams) -> List[LangChainStore]:
+    def do_parse(self, document_id: int, config: ConfigParams) -> List[LangChainStore]:
         document = self.db.query(Document).filter(Document.id == document_id).first()
-        chunks = self.db.query(Chunk).filter(Chunk.document_id == document_id).all()
-        store = self.db.query(Store).filter(Store.document_id == document_id).first()
+        chunks = self.db.query(Chunk).filter(Chunk.id == document.chunk_id).first()
+        store = self.db.query(Store).filter(Store.id == document.store_id).first()
 
         data = []
         for chunk in chunks:
@@ -54,9 +54,12 @@ class StoreService:
                 content=chunk.content,
                 metadata=StoreMetaData(source=document.filename, page=chunk.page, store_id=store.id)
             ))
-        self.storer.create_collection(document.filename)
-        self.storer.insert(data=data)
+        storer = MilvusStorer(document.filename)
+        storer.create_collection(document.filename)
+        storer.insert(data=data)
         return [LangChainStore(content="", metadata=StoreMetaData(source=document.filename, page=chunk.page, store_id=store.id)) for chunk in chunks]
 
     def do_search(self, document_id: int, query: str) -> str:
-        return self.storer.search(query)
+        document = self.db.query(Document).filter(Document.id == document_id).first()
+        storer = MilvusStorer(document.filename)
+        return storer.search(query)

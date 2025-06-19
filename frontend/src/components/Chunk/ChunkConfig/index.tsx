@@ -8,7 +8,7 @@ import {
   Typography,
 } from 'antd';
 import type { Document } from '@/types/document';
-import type { ConfigParams } from '@/types/common_config';
+import type { ConfigParams } from '@/types/commonConfig';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { fetchChunkConfig, processChunk } from '@/store/slices/chunkSlice';
 import ConfigRender from '@/components/Common/ConfigRender';

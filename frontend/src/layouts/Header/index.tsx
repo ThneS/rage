@@ -25,7 +25,7 @@ const steps = [
   { title: '文档加载', path: '/document-loader' },
   { title: '文档分块', path: '/chunk' },
   { title: '文档嵌入', path: '/embedding' },
-  { title: '建立索引', path: '/indexing' },
+  { title: '向量存储', path: '/vec-store' },
   { title: '检索前处理', path: '/pre-retrieval' },
   { title: '检索后处理', path: '/post-retrieval' },
   { title: '检索评估', path: '/evaluation' },

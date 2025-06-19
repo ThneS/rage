@@ -3,8 +3,8 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import type { AppThunk, AppDispatch } from '@/store/types';
 import { documentService } from '@/services/documentService';
 import type { Document, LangChainDocument } from '@/types/document';
-import type { ConfigParams } from '@/types/common_config';
-import { DocumentStatus } from '@/types/common_config';
+import type { ConfigParams } from '@/types/commonConfig';
+import { DocumentStatus } from '@/types/commonConfig';
 
 export interface DocumentState {
   documents: Document[];

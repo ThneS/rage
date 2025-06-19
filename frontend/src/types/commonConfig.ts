@@ -42,7 +42,7 @@ export const DocumentStatus = {
   LOADED: 'loaded',
   CHUNKED: 'chunked',
   EMBEDDED: 'embedded',
-  INDEXED: 'indexed',
+  STORED: 'stored',
   ERROR: 'error',
 } as const;
 

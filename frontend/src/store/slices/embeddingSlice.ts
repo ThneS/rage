@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { AppThunk, AppDispatch } from '@/store/types';
 import type { LangChainEmbedding } from '@/types/embedding';
-import type { ConfigParams } from '@/types/common_config';
+import type { ConfigParams } from '@/types/commonConfig';
 import {fetchDocuments} from '@/store/slices/documentSlice';
 import { embeddingService } from '@/services/embeddingService';
 

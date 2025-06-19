@@ -1,4 +1,4 @@
-import type { ConfigParams } from '@/types/common_config';
+import type { ConfigParams } from '@/types/commonConfig';
 import { API_EMBEDDING_URL } from '@/constants/api';
 import { get, post } from '@/utils/request';
 import type { LangChainEmbedding } from '@/types/embedding';

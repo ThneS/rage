@@ -1,6 +1,6 @@
 import type { DocumentStatus } from "@/types/commonConfig";
 
-export interface Document {
+export interface VecStore {
   id: number;
   filename: string;
   file_type: string;
@@ -14,12 +14,13 @@ export interface Document {
   error_message?: string;
 }
 
-export interface LangChainDocument {
+export interface VecStoreMetaData {
+  source?: string;     // 文档来源
+  page?: number;       // 页码（如果有）
+  chunk_id?: number;   // 分块ID
+}
+
+export interface LangChainVecStore {
   page_content: string;  // 文档内容
-  metadata: {
-    source?: string;     // 文档来源
-    page?: number;       // 页码（如果有）
-    chunk_id?: string;   // 分块ID
-    [key: string]: any;  // 其他元数据
-  };
+  metadata: VecStoreMetaData;
 }

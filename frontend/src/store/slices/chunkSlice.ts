@@ -2,7 +2,7 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { chunkService } from '@/services/chunkService';
 import type { AppThunk, AppDispatch } from '@/store/types';
 import type { LangChainChunk } from '@/types/chunk';
-import type { ConfigParams } from '@/types/common_config';
+import type { ConfigParams } from '@/types/commonConfig';
 import {fetchDocuments} from '@/store/slices/documentSlice';
 export interface ChunkState {
   config: ConfigParams | null;

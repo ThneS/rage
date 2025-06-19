@@ -6,12 +6,15 @@ import embeddingReducer from './slices/embeddingSlice';
 import type { DocumentState } from './slices/documentSlice';
 import type { ChunkState } from './slices/chunkSlice';
 import type { EmbeddingState } from './slices/embeddingSlice';
+import type { VecStoreState } from './slices/vecStoreSlice';
+import vecStoreReducer from './slices/vecStoreSlice';
 
 // 定义根 reducer
 export const rootReducer = combineReducers({
   document: documentReducer,
   chunk: chunkReducer,
   embedding: embeddingReducer,
+  vecStore: vecStoreReducer,
   // 其他 reducer 将在这里添加
 });
 
@@ -33,4 +36,5 @@ export interface RootState {
   document: DocumentState;
   chunk: ChunkState;
   embedding: EmbeddingState;
+  vecStore: VecStoreState;
 }

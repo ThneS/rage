@@ -10,28 +10,27 @@ import {
 import type { Document } from '@/types/document';
 import type { ConfigParams } from '@/types/commonConfig';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { processDocument, fetchLoadConfig } from '@/store/slices/documentSlice';
+import { fetchVecStoreConfig, processVecStore } from '@/store/slices/vecStoreSlice';
 import ConfigRender from '@/components/Common/ConfigRender';
 
 const { Text } = Typography;
 
-interface LoadConfigProps {
+interface VecStoreConfigProps {
   selectedDocument: Document | null;
   processing: boolean;
-  onViewLoad?: () => void;
-  loadResult?: any;
+  onViewVecStore?: () => void;
+  VecStoreResult?: any;
 }
 
-const LoadConfig: React.FC<LoadConfigProps> = ({
+const VecStoreConfig: React.FC<VecStoreConfigProps> = ({
   selectedDocument,
   processing,
-  onViewLoad,
-  loadResult,
+  onViewVecStore,
+  VecStoreResult,
 }) => {
   const [form] = Form.useForm();
   const { message } = App.useApp();
-  const config = useAppSelector(state => state.document.config);
-  const loading = useAppSelector(state => state.document.loading);
+  const { config, loading, error } = useAppSelector(state => state.vecStore);
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [initialValues, setInitialValues] = useState<Record<string, any>>({});
   const dispatch = useAppDispatch();
@@ -39,7 +38,7 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
   // 获取文档加载配置
   useEffect(() => {
     if (selectedDocument) {
-      dispatch(fetchLoadConfig(selectedDocument.id));
+      dispatch(fetchVecStoreConfig(selectedDocument.id));
     }
   }, [selectedDocument, dispatch]);
 
@@ -55,20 +54,27 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
   const handleValuesChange = (_: any, allValues: Record<string, any>) => {
     setFormValues(allValues);
   };
+
   const handleSubmit = async (values: Record<string, any>) => {
     if (!config || !selectedDocument) {
       message.error('配置信息不完整');
       return;
     }
-    // 合并配置信息和表单值
-    const submitConfig: ConfigParams = {
-      ...config,
-      default_config: {
-        ...config.default_config,
-        ...values
-      }
-    };
-    dispatch(processDocument(selectedDocument.id, submitConfig));
+    try {
+      // 合并配置信息和表单值
+      const submitConfig: ConfigParams = {
+        ...config,
+        default_config: {
+          ...config.default_config,
+          ...values
+        }
+      };
+
+      await dispatch(processVecStore(selectedDocument.id, submitConfig));
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : '处理失败';
+      message.error(errorMessage);
+    }
   };
 
   return (
@@ -76,7 +82,7 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
       title={
         <Space>
           {config?.icon && <i className={`fas fa-${config.icon}`} />}
-          <span>处理配置</span>
+          <span>分块配置</span>
           {config?.name && <Text type="secondary">({config.name})</Text>}
         </Space>
       }
@@ -117,7 +123,7 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
               config={config}
               formValues={formValues}
               processing={processing}
-              error={undefined}
+              error={error}
               selectedDocument={selectedDocument}
             />
           </div>
@@ -134,11 +140,11 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
               </Button>
               <Button
                 type="default"
-                onClick={onViewLoad}
+                onClick={onViewVecStore}
                 style={{ minWidth: 100 }}
-                disabled={!selectedDocument || !loadResult}
+                disabled={!selectedDocument || !VecStoreResult}
               >
-                查看加载
+                查看分块
               </Button>
             </Space>
           </Form.Item>
@@ -148,4 +154,4 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
   );
 };
 
-export default LoadConfig;
+export default VecStoreConfig;

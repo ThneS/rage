@@ -15,8 +15,8 @@ import type { ColumnsType } from 'antd/es/table';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { fetchDocuments, deleteDocument } from '@/store/slices/documentSlice';
 import type { Document } from '@/types/document';
-import { DocumentStatus } from '@/types/common_config';
-import { documentStatusConfig } from '@/types/common_config';
+import { DocumentStatus } from '@/types/commonConfig';
+import { documentStatusConfig } from '@/types/commonConfig';
 
 const iconMap = {
   ClockCircleOutlined: ClockCircleOutlined,
@@ -36,7 +36,8 @@ const EmbeddingList: React.FC<EmbeddingListProps> = ({ onSelectDocument, selecte
 
   // 只显示已加载的文档
   const loadedDocuments = useMemo(() => {
-    return documents.filter(doc => doc.status === DocumentStatus.CHUNKED || doc.status === DocumentStatus.EMBEDDED);
+    // return documents.filter(doc => doc.status === DocumentStatus.CHUNKED || doc.status === DocumentStatus.EMBEDDED);
+    return documents;
   }, [documents]);
 
   useEffect(() => {

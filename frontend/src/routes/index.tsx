@@ -5,6 +5,7 @@ import MainLayout from '../layouts/MainLayout';
 import DocumentLoader from '@/pages/DocumentLoader';
 import ChunkPage from '@/pages/ChunkPage';
 import EmbeddingPage from '@/pages/EmbeddingPage';
+import VecStorePage from '@/pages/VecStorePage';
 
 export const routes: RouteObject[] = [
   {
@@ -26,6 +27,10 @@ export const routes: RouteObject[] = [
       {
         path: 'embedding',
         element: <EmbeddingPage />
+      },
+      {
+        path: 'vec-store',
+        element: <VecStorePage />
       },
       {
         path: '*',
