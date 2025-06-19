@@ -8,7 +8,7 @@ class DocumentStatus(str, Enum):
     LOADED = "loaded"        # 已加载
     CHUNKED = "chunked"      # 已分块
     EMBEDDED = "embedded"    # 已嵌入
-    INDEXED = "indexed"      # 已索引
+    STORED = "stored"        # 已存储
     ERROR = "error"          # 错误
 
 class ConfigFieldOption(BaseModel):

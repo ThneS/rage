@@ -1,0 +1,62 @@
+from chunk import Chunk
+from sqlalchemy.orm import Session
+from app.models.document import Document
+from app.models.store import Store
+from app.schemas.store import LangChainStore, StoreMetaData
+from app.schemas.document import LangChainDocument
+from app.schemas.common_config import ConfigParams, DocumentStatus
+from app.schemas.configuration.store import get_default_config
+from typing import List
+from fastapi import HTTPException
+from app.services.chunkers.langchain_chunker import LangChainChunker
+from app.services.storer.milvus import MilvusStorer
+
+class StoreService:
+    def __init__(self, db: Session):
+        self.db = db
+    def get_store_config(self, document_id: int) -> ConfigParams:
+        # 1. 获取文档对象，校验是否存在
+        document = self.db.query(Document).filter(Document.id == document_id).first()
+        if not document:
+            raise HTTPException(status_code=404, detail="文档不存在")
+
+        # 2. 获取或创建 store
+        if not document.store_id:
+            # 如果不存在 store，则创建新的 store 配置
+            config:ConfigParams = get_default_config()
+            store = Store(
+                document_id=document_id,
+                config=config.model_dump(),
+                meta_data={
+                    "document": {"id": document.id, "filename": document.filename}
+                },
+                result=[]
+            )
+            self.db.add(store)
+            self.db.commit()
+            self.db.refresh(store)
+            document.store_id = store.id
+            self.db.commit()
+            self.db.refresh(document)
+        else:
+            store = self.db.query(Store).filter(Store.id == document.store_id).first()
+        # 3. 返回 store 配置
+        return ConfigParams.model_validate(store.config)
+
+    def do_store(self, document_id: int, config: ConfigParams) -> List[LangChainStore]:
+        document = self.db.query(Document).filter(Document.id == document_id).first()
+        chunks = self.db.query(Chunk).filter(Chunk.document_id == document_id).all()
+        store = self.db.query(Store).filter(Store.document_id == document_id).first()
+
+        data = []
+        for chunk in chunks:
+            data.append(LangChainStore(
+                content=chunk.content,
+                metadata=StoreMetaData(source=document.filename, page=chunk.page, store_id=store.id)
+            ))
+        self.storer.create_collection(document.filename)
+        self.storer.insert(data=data)
+        return [LangChainStore(content="", metadata=StoreMetaData(source=document.filename, page=chunk.page, store_id=store.id)) for chunk in chunks]
+
+    def do_search(self, document_id: int, query: str) -> str:
+        return self.storer.search(query)
