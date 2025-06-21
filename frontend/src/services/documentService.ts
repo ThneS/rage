@@ -1,4 +1,5 @@
-import type { Document, DocumentLoadConfig, FileTypeConfigResponse, LangChainDocument } from '@/types/document';
+import type { Document, FileTypeConfigResponse, LangChainDocument } from '@/types/document';
+import type { ConfigParams } from '@/types/commonConfig';
 import { API_DOCUMENTS_URL } from '@/constants/api';
 import { get, del, upload, post } from '@/utils/request';
 
@@ -32,7 +33,7 @@ export class DocumentService {
 
   async processDocument(
     id: number,
-    config: DocumentLoadConfig
+    config: ConfigParams
   ): Promise<LangChainDocument[]> {
     return post<LangChainDocument[]>(`${API_DOCUMENTS_URL}/${id}/parse`, config);
   }

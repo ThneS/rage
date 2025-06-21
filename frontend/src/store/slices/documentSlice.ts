@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { documentService } from '@/services/documentService';
-import type { Document, DocumentLoadConfig } from '@/types/document';
+import type { Document } from '@/types/document';
 import type { LangChainDocument } from '@/types/document';
 import type { AppThunk, AppDispatch, RootState } from '../types';
 import type { ConfigParams } from '@/types/commonConfig';
@@ -86,7 +86,7 @@ export const uploadDocument = (file: File): AppThunk => async (dispatch: AppDisp
   }
 };
 
-export const processDocument = (documentId: number, config: DocumentLoadConfig): AppThunk<Promise<void>> => async (dispatch: AppDispatch) => {
+export const processDocument = (documentId: number, config: ConfigParams): AppThunk<Promise<void>> => async (dispatch: AppDispatch) => {
   try {
     dispatch(setLoading(true));
     const result = await documentService.processDocument(documentId, config);

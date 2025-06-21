@@ -60,18 +60,16 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
       return;
     }
 
-    // 创建 DocumentLoadConfig 对象
-    const submitConfig = {
-      file_path: selectedDocument.file_path,
-      file_type: selectedDocument.file_type,
-      loader_name: config.name || 'default',
-      loader_config: {
+    // 创建完整的 ConfigParams 对象，将用户修改的值合并到 default_config 中
+    const updatedConfig = {
+      ...config,
+      default_config: {
         ...config.default_config,
         ...values
       }
     };
 
-    dispatch(processDocument(selectedDocument.id, submitConfig));
+    dispatch(processDocument(selectedDocument.id, updatedConfig));
   };
 
   return (

@@ -28,21 +28,27 @@ const GenerateColumn = ({ documentId, config, formValues, result, processing, se
     }
   }, [config, form]);
 
-  const handleGenerate = async (values: Record<string, string | number | boolean>) => {
-    console.log('GenerateColumn: 生成按钮被点击，values:', values);
-    console.log('GenerateColumn: documentId:', documentId);
+  const handleRun = async () => {
+    if (!config || !formValues) {
+      message.error('配置信息不完整');
+      return;
+    }
+
+    // 合并默认配置和用户修改的配置
+    const mergedConfig = {
+      ...config.default_config,
+      ...formValues
+    };
+
     try {
-      await dispatch(runGenerate(documentId, values));
-      message.success('生成完成');
+      await dispatch(runGenerate(documentId, mergedConfig));
     } catch (error) {
-      console.error('GenerateColumn: 生成失败:', error);
-      message.error('生成失败: ' + (error instanceof Error ? error.message : '未知错误'));
+      // 错误已经在 slice 中处理
     }
   };
 
-  const handleValuesChange = (changed: Record<string, string | number | boolean>, allValues: Record<string, string | number | boolean>) => {
+  const handleValuesChange = (_: Record<string, string | number | boolean>, __: Record<string, string | number | boolean>) => {
     // 这里可以处理配置变化，如果需要的话
-    console.log('配置值变化:', changed, allValues);
   };
 
   if (!config) {
@@ -65,7 +71,7 @@ const GenerateColumn = ({ documentId, config, formValues, result, processing, se
             processing={processing}
             selectedDocument={selectedDocument || undefined}
             onValuesChange={handleValuesChange}
-            onFinish={handleGenerate}
+            onFinish={handleRun}
             form={form}
             initialValues={config.default_config}
           >

@@ -27,14 +27,6 @@ const GeneratePage = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    console.log('GeneratePage: selectedDocument 变化:', selectedDocument);
-  }, [selectedDocument]);
-
-  useEffect(() => {
-    console.log('GeneratePage: config 变化:', config);
-  }, [config]);
-
-  useEffect(() => {
     if (docsError) {
       message.error(docsError);
     }
@@ -44,7 +36,6 @@ const GeneratePage = () => {
   }, [docsError, generateError]);
 
   const handleSelectDocument = (document: Document) => {
-    console.log('GeneratePage: 选择文档:', document);
     dispatch(selectDocument(document.id));
   };
 

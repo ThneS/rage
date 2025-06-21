@@ -20,13 +20,11 @@ const ProcessingColumn = ({ documentId, config, onFormValuesChange }: Processing
 
   useEffect(() => {
     if (documentId) {
-      console.log('ProcessingColumn: 开始获取配置，documentId:', documentId);
       dispatch(fetchGenerateConfig(documentId));
     }
   }, [dispatch, documentId]);
 
   useEffect(() => {
-    console.log('ProcessingColumn: config 变化:', config);
     if (config) {
       onFormValuesChange(config.default_config);
     }
