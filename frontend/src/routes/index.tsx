@@ -6,6 +6,7 @@ import DocumentLoader from '@/pages/DocumentLoader';
 import ChunkPage from '@/pages/ChunkPage';
 import EmbeddingPage from '@/pages/EmbeddingPage';
 import VecStorePage from '@/pages/VecStorePage';
+import SearchPage from '@/pages/SearchPage';
 
 export const routes: RouteObject[] = [
   {
@@ -31,6 +32,10 @@ export const routes: RouteObject[] = [
       {
         path: 'vec-store',
         element: <VecStorePage />
+      },
+      {
+        path: 'search',
+        element: <SearchPage />
       },
       {
         path: '*',

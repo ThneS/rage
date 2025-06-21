@@ -41,19 +41,19 @@ const menuItems = [
     label: '向量存储',
   },
   {
-    key: '/pre-retrieval',
+    key: '/search',
     icon: <SearchOutlined />,
-    label: '检索前处理',
+    label: '检索',
   },
   {
-    key: '/post-retrieval',
+    key: '/generate',
     icon: <FilterOutlined />,
-    label: '检索后处理',
+    label: '生成',
   },
   {
     key: '/evaluation',
     icon: <BarChartOutlined />,
-    label: '检索评估',
+    label: '评估',
   },
 ];
 

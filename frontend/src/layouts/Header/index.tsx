@@ -26,9 +26,9 @@ const steps = [
   { title: '文档分块', path: '/chunk' },
   { title: '文档嵌入', path: '/embedding' },
   { title: '向量存储', path: '/vec-store' },
-  { title: '检索前处理', path: '/pre-retrieval' },
-  { title: '检索后处理', path: '/post-retrieval' },
-  { title: '检索评估', path: '/evaluation' },
+  { title: '检索', path: '/search' },
+  { title: '生成', path: '/generate' },
+  { title: '评估', path: '/evaluation' },
 ];
 
 const Header: React.FC = () => {
