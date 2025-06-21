@@ -82,7 +82,7 @@ const VecStoreConfig: React.FC<VecStoreConfigProps> = ({
       title={
         <Space>
           {config?.icon && <i className={`fas fa-${config.icon}`} />}
-          <span>分块配置</span>
+          <span>Indexing and Search</span>
           {config?.name && <Text type="secondary">({config.name})</Text>}
         </Space>
       }

@@ -9,12 +9,9 @@ class Store(Base):
     属性:
         id: 主键
         document_id: 关联的文档ID
-        document_page: 文档页码(如果文档是分页的)
-        page: 分块在文档中的页码
-        content: 分块内容
-        chunk_metadata: 分块元数据(如分块原因、位置等)
-        chunk_config: 分块配置(如分块大小、重叠度等)
-        chunk_result: 分块结果(如分块质量评估等)
+        meta_data: 存储元数据(如文档信息、存储配置等)
+        config: 存储配置(如向量化参数、索引设置等)
+        result: 存储结果(如向量化结果、索引信息等)
         document: 关联的文档对象
 
     关系:

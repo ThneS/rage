@@ -214,6 +214,7 @@ backend/rag_tuning.db
 # Uploads
 backend/uploads/
 uploads/
+*.lock
 
 # Node
 node_modules/

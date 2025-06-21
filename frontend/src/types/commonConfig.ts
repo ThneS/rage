@@ -59,6 +59,6 @@ export const documentStatusConfig: Record<DocumentStatus, StatusConfig> = {
   loaded: { color: 'blue', iconType: 'CheckCircleOutlined', text: '已加载' },
   chunked: { color: 'cyan', iconType: 'CheckCircleOutlined', text: '已分块' },
   embedded: { color: 'purple', iconType: 'CheckCircleOutlined', text: '已嵌入' },
-  indexed: { color: 'green', iconType: 'CheckCircleOutlined', text: '已索引' },
+  stored: { color: 'green', iconType: 'CheckCircleOutlined', text: '已存储' },
   error: { color: 'error', iconType: 'CloseCircleOutlined', text: '错误' },
 };

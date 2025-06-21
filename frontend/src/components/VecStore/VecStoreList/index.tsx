@@ -71,7 +71,7 @@ const VecStoreList: React.FC<VecStoreListProps> = ({ onSelectDocument, selectedI
   };
 
   const handleSearch = () => {
-    setOutputText(''); // 先清空输出框
+    // setOutputText(''); // 先清空输出框
     if (selectedId) {
       dispatch(searchVecStore(selectedId, queryText));
     }
