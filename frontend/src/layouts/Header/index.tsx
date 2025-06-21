@@ -28,7 +28,7 @@ const steps = [
   { title: '向量存储', path: '/vec-store' },
   { title: '检索', path: '/search' },
   { title: '生成', path: '/generate' },
-  { title: '评估', path: '/evaluation' },
+  // { title: '评估', path: '/evaluation' },
 ];
 
 const Header: React.FC = () => {

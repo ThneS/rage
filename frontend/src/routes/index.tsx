@@ -7,6 +7,7 @@ import ChunkPage from '@/pages/ChunkPage';
 import EmbeddingPage from '@/pages/EmbeddingPage';
 import VecStorePage from '@/pages/VecStorePage';
 import SearchPage from '@/pages/SearchPage';
+import GeneratePage from '@/pages/GeneratePage';
 
 export const routes: RouteObject[] = [
   {
@@ -36,6 +37,10 @@ export const routes: RouteObject[] = [
       {
         path: 'search',
         element: <SearchPage />
+      },
+      {
+        path: 'generate',
+        element: <GeneratePage />
       },
       {
         path: '*',

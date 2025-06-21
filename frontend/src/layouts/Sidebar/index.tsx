@@ -7,7 +7,7 @@ import {
   DatabaseOutlined,
   SearchOutlined,
   FilterOutlined,
-  BarChartOutlined,
+  // BarChartOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styled from '@emotion/styled';
@@ -50,11 +50,11 @@ const menuItems = [
     icon: <FilterOutlined />,
     label: '生成',
   },
-  {
-    key: '/evaluation',
-    icon: <BarChartOutlined />,
-    label: '评估',
-  },
+  // {
+  //   key: '/evaluation',
+  //   icon: <BarChartOutlined />,
+  //   label: '评估',
+  // },
 ];
 
 const Sidebar: React.FC = () => {

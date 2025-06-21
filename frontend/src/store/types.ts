@@ -10,6 +10,8 @@ import type { VecStoreState } from './slices/vecStoreSlice';
 import vecStoreReducer from './slices/vecStoreSlice';
 import type { SearchState } from './slices/searchSlice';
 import searchReducer from './slices/searchSlice';
+import type {GenerateState} from "./slices/generateSlice"
+import generateReducer from "./slices/generateSlice"
 
 // 定义根 reducer
 export const rootReducer = combineReducers({
@@ -18,6 +20,7 @@ export const rootReducer = combineReducers({
   embedding: embeddingReducer,
   vecStore: vecStoreReducer,
   search: searchReducer,
+  generate: generateReducer,
   // 其他 reducer 将在这里添加
 });
 
@@ -41,4 +44,5 @@ export interface RootState {
   embedding: EmbeddingState;
   vecStore: VecStoreState;
   search: SearchState;
+  generate: GenerateState;
 }

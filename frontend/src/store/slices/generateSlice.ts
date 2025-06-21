@@ -1,26 +1,26 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { chunkService } from '@/services/chunkService';
+import { generateService } from '@/services/generateService';
 import type { AppThunk, AppDispatch } from '@/store/types';
-import type { LangChainSearch } from '@/types/search';
+import type { LangChainGenerate } from '@/types/generate';
 import type { ConfigParams } from '@/types/commonConfig';
 import {fetchDocuments} from '@/store/slices/documentSlice';
-import { searchService } from '@/services/searchService';
-export interface SearchState {
+
+export interface GenerateState {
   config: ConfigParams | null;
-  result: LangChainSearch[] | null;
+  result: LangChainGenerate[] | null;
   loading: boolean;
   error: string | null;
 }
 
-const initialState: SearchState = {
+const initialState: GenerateState = {
   config: null,
   result: null,
   loading: false,
   error: null
 };
 
-const searchSlice = createSlice({
-  name: 'search',
+const generateSlice = createSlice({
+  name: 'generate',
   initialState,
   reducers: {
     setConfig: (state, action: PayloadAction<ConfigParams | null>) => {
@@ -33,33 +33,32 @@ const searchSlice = createSlice({
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
     },
-    setSearchResult: (state, action: PayloadAction<LangChainSearch[] | null>) => {
+    setGenerateResult: (state, action: PayloadAction<LangChainGenerate[] | null>) => {
       state.result = action.payload;
     },
   },
 });
 
-export const { setConfig, setLoading, setError, setSearchResult } = searchSlice.actions;
+export const { setConfig, setLoading, setError, setGenerateResult } = generateSlice.actions;
 
-
-export const fetchSearchConfig = (documentId: number): AppThunk => async (dispatch: AppDispatch) => {
+export const fetchGenerateConfig = (documentId: number): AppThunk => async (dispatch: AppDispatch) => {
   try {
     dispatch(setLoading(true));
-    const config = await searchService.getSearchConfig(documentId);
+    const config = await generateService.getGenerateConfig(documentId);
     dispatch(setConfig(config));
   } catch (error) {
-    dispatch(setError(error instanceof Error ? error.message : '获取分块配置失败'));
+    dispatch(setError(error instanceof Error ? error.message : '获取生成配置失败'));
     dispatch(setConfig(null));
   } finally {
     dispatch(setLoading(false));
   }
 };
 
-export const processSearch = (documentId: number, config: ConfigParams): AppThunk<Promise<void>> => async (dispatch: AppDispatch) => {
+export const processGenerate = (documentId: number, config: ConfigParams): AppThunk<Promise<void>> => async (dispatch: AppDispatch) => {
   try {
     dispatch(setLoading(true));
-    const result = await searchService.processSearch(documentId, config);
-    dispatch(setSearchResult(result));
+    const result = await generateService.processGenerate(documentId, config);
+    dispatch(setGenerateResult(result));
     dispatch(fetchDocuments());
   } catch (error) {
     dispatch(setError(error instanceof Error ? error.message : '处理文档失败'));
@@ -69,4 +68,4 @@ export const processSearch = (documentId: number, config: ConfigParams): AppThun
   }
 };
 
-export default searchSlice.reducer;
+export default generateSlice.reducer;
