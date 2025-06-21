@@ -7,8 +7,8 @@ import type { Document } from '@/types/document';
 
 interface PreProcessColumnProps {
   config: ConfigParams | null;
-  formValues: Record<string, any>;
-  onValuesChange: (values: Record<string, any>) => void;
+  formValues: Record<string, string | number | boolean>;
+  onValuesChange: (values: Record<string, string | number | boolean>) => void;
   result: string | null;
   onExecute: (content: string) => void;
   onBack: () => void;

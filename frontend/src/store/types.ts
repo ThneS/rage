@@ -1,4 +1,4 @@
-import type { ThunkAction, ThunkDispatch } from '@reduxjs/toolkit';
+import type { ThunkAction, ThunkDispatch, Action } from '@reduxjs/toolkit';
 import { combineReducers } from '@reduxjs/toolkit';
 import documentReducer from './slices/documentSlice';
 import chunkReducer from './slices/chunkSlice';
@@ -33,10 +33,10 @@ export type AppThunk<ReturnType = void> = ThunkAction<
   ReturnType,
   RootState,
   unknown,
-  any
+  Action<string>
 >;
 
-export type AppThunkDispatch = ThunkDispatch<RootState, unknown, any>;
+export type AppThunkDispatch = ThunkDispatch<RootState, unknown, Action<string>>;
 
 // 定义 AppDispatch 类型
 export type AppDispatch = AppThunkDispatch;

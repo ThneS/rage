@@ -10,7 +10,7 @@ export interface SearchState {
   postConfig: ConfigParams | null;
   preProcessResult: string | null;
   postProcessResult: string | null;
-  parseResult: any | null;
+  parseResult: Record<string, unknown> | null;
   loading: boolean;
   error: string | null;
 }
@@ -51,7 +51,7 @@ const searchSlice = createSlice({
     setPostProcessResult: (state, action: PayloadAction<string | null>) => {
         state.postProcessResult = action.payload;
     },
-    setParseResult: (state, action: PayloadAction<any | null>) => {
+    setParseResult: (state, action: PayloadAction<Record<string, unknown> | null>) => {
         state.parseResult = action.payload;
     }
   },
@@ -96,7 +96,7 @@ export const fetchSearchConfigs = (documentId: number): AppThunk => async (dispa
     }
 };
 
-export const runPreProcess = (documentId: number, query: string, config: Record<string, any>): AppThunk => async (dispatch: AppDispatch) => {
+export const runPreProcess = (documentId: number, query: string, config: Record<string, string | number | boolean>): AppThunk => async (dispatch: AppDispatch) => {
     try {
         dispatch(setLoading(true));
         const result = await searchService.preProcess(documentId, query, config);
@@ -108,7 +108,7 @@ export const runPreProcess = (documentId: number, query: string, config: Record<
     }
 };
 
-export const runPostProcess = (documentId: number, content: string, config: Record<string, any>): AppThunk => async (dispatch: AppDispatch) => {
+export const runPostProcess = (documentId: number, content: string, config: Record<string, string | number | boolean>): AppThunk => async (dispatch: AppDispatch) => {
     try {
         dispatch(setLoading(true));
         const result = await searchService.postProcess(documentId, content, config);

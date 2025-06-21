@@ -50,7 +50,7 @@ export const fetchGenerateConfig = (documentId: number): AppThunk => async (disp
     }
 };
 
-export const runGenerate = (documentId: number, config: Record<string, any>): AppThunk => async (dispatch: AppDispatch) => {
+export const runGenerate = (documentId: number, config: Record<string, string | number | boolean>): AppThunk => async (dispatch: AppDispatch) => {
     try {
         dispatch(setLoading(true));
         const result = await generateService.generate(documentId, config);

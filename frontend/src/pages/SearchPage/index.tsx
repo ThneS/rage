@@ -29,9 +29,9 @@ const SearchPage: React.FC = () => {
   const selectedDocument = useAppSelector(selectSelectedDocument);
   const [currentStep, setCurrentStep] = useState(0);
   const [query, setQuery] = useState('');
-  const [vecStoreFormValues, setVecStoreFormValues] = useState<Record<string, any>>({});
-  const [preProcessFormValues, setPreProcessFormValues] = useState<Record<string, any>>({});
-  const [postProcessFormValues, setPostProcessFormValues] = useState<Record<string, any>>({});
+  const [vecStoreFormValues, setVecStoreFormValues] = useState<Record<string, string | number | boolean>>({});
+  const [preProcessFormValues, setPreProcessFormValues] = useState<Record<string, string | number | boolean>>({});
+  const [postProcessFormValues, setPostProcessFormValues] = useState<Record<string, string | number | boolean>>({});
 
   useEffect(() => {
     dispatch(fetchDocuments());

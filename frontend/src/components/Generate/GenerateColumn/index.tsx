@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react';
-import { Card, Typography, Spin, Divider, Button, message, Form, Empty } from 'antd';
+import { useEffect } from 'react';
+import { Card, Typography, Spin, Divider, Button, message, Form } from 'antd';
 import { useAppDispatch } from '@/store';
 import { runGenerate } from '@/store/slices/generateSlice';
 import ConfigRender from '@/components/Common/ConfigRender';
 import type { ConfigParams } from '@/types/commonConfig';
 import type { Document } from '@/types/document';
 
-const { Title, Paragraph, Text } = Typography;
+const { Paragraph } = Typography;
 
 interface GenerateColumnProps {
   documentId: number;
   config: ConfigParams | null;
-  formValues: Record<string, any>;
+  formValues: Record<string, string | number | boolean>;
   result: string | null;
   processing: boolean;
   selectedDocument?: Document | null;
@@ -28,7 +28,7 @@ const GenerateColumn = ({ documentId, config, formValues, result, processing, se
     }
   }, [config, form]);
 
-  const handleGenerate = async (values: Record<string, any>) => {
+  const handleGenerate = async (values: Record<string, string | number | boolean>) => {
     console.log('GenerateColumn: 生成按钮被点击，values:', values);
     console.log('GenerateColumn: documentId:', documentId);
     try {
@@ -40,7 +40,7 @@ const GenerateColumn = ({ documentId, config, formValues, result, processing, se
     }
   };
 
-  const handleValuesChange = (changed: any, allValues: Record<string, any>) => {
+  const handleValuesChange = (changed: Record<string, string | number | boolean>, allValues: Record<string, string | number | boolean>) => {
     // 这里可以处理配置变化，如果需要的话
     console.log('配置值变化:', changed, allValues);
   };

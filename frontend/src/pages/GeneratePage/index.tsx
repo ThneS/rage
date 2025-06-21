@@ -15,7 +15,7 @@ const GeneratePage = () => {
   const { loading: generateLoading, error: generateError, config, result } = useAppSelector(state => state.generate as GenerateState);
   const selectedDocument = useAppSelector(selectSelectedDocument);
 
-  const [formValues, setFormValues] = useState<Record<string, any>>({});
+  const [formValues, setFormValues] = useState<Record<string, string | number | boolean>>({});
 
   useEffect(() => {
     dispatch(fetchDocuments());

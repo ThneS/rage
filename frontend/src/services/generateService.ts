@@ -6,7 +6,7 @@ export const generateService = {
   getGenerateConfig: (documentId: number): Promise<ConfigParams> => {
     return get(`${API_GENERATE_URL}/${documentId}/config`);
   },
-  generate: (documentId: number, config: Record<string, any>): Promise<{ text: string }> => {
+  generate: (documentId: number, config: Record<string, string | number | boolean>): Promise<{ text: string }> => {
     return post(`${API_GENERATE_URL}/${documentId}/generate`, { config });
   },
 };

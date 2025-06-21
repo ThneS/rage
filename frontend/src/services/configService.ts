@@ -1,5 +1,5 @@
 import { get, put, post } from '@/utils/request';
-import type { AllConfig, ModelConfig, ConnectionConfig, SystemConfig } from '@/types/config';
+import type { AllConfig, ModelConfig, ConnectionConfig, SystemConfig, FrontendConfig } from '@/types/config';
 import { API_CONFIG_URL } from '@/constants/api';
 
 // 前端配置存储键
@@ -44,7 +44,7 @@ export const configService = {
   },
 
   // 前端配置管理
-  getFrontendConfig: () => {
+  getFrontendConfig: (): FrontendConfig | null => {
     try {
       const config = localStorage.getItem(FRONTEND_CONFIG_KEY);
       return config ? JSON.parse(config) : null;
@@ -54,7 +54,7 @@ export const configService = {
     }
   },
 
-  setFrontendConfig: (config: any) => {
+  setFrontendConfig: (config: FrontendConfig): boolean => {
     try {
       localStorage.setItem(FRONTEND_CONFIG_KEY, JSON.stringify(config));
       return true;

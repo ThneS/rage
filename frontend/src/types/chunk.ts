@@ -7,7 +7,7 @@ export interface Chunk {
   file_size: number;
   file_path: string;
   status: DocumentStatus;
-  doc_metadata?: Record<string, any>;
+  doc_metadata?: Record<string, string | number | boolean>;
   created_at: string;
   updated_at: string;
   processed_at?: string;

@@ -1,25 +1,29 @@
 import React, { useMemo } from 'react';
 import { Form, Space, Tooltip, Typography, Tabs, Alert, Input, InputNumber, Select, Switch, Radio, Checkbox } from 'antd';
+import type { Document } from '@/types/document';
+import type { FormInstance } from 'antd/es/form';
 import type { ConfigField, ConfigParams } from '@/types/commonConfig';
+import type { Document } from '@/types/document';
+import type { FormInstance } from 'antd/es/form';
 
 const { Text } = Typography;
 const { Option } = Select;
 
 interface ConfigRenderProps {
   config: ConfigParams | null;
-  formValues?: Record<string, any>;
+  formValues?: Record<string, string | number | boolean>;
   processing?: boolean;
   error?: string | null;
-  onValuesChange?: (changed: any, all: Record<string, any>) => void;
-  initialValues?: Record<string, any>;
-  selectedDocument?: any;
+  onValuesChange?: (changed: Record<string, string | number | boolean>, all: Record<string, string | number | boolean>) => void;
+  initialValues?: Record<string, string | number | boolean>;
+  selectedDocument?: Document;
   children?: React.ReactNode;
   // 表单包装器模式
-  form?: any;
-  onFinish?: (values: Record<string, any>) => void;
+  form?: FormInstance;
+  onFinish?: (values: Record<string, string | number | boolean>) => void;
 }
 
-const shouldShowField = (field: ConfigField, formValues: Record<string, any>): boolean => {
+const shouldShowField = (field: ConfigField, formValues: Record<string, string | number | boolean>): boolean => {
   if (!field.dependencies) return true;
   const { field: depField, value: depValue } = field.dependencies;
   const currentValue = formValues[depField];
@@ -29,7 +33,7 @@ const shouldShowField = (field: ConfigField, formValues: Record<string, any>): b
   return currentValue === depValue;
 };
 
-const renderFormItem = (field: ConfigField, commonProps: any) => {
+const renderFormItem = (field: ConfigField, commonProps: Record<string, unknown>) => {
   switch (field.type) {
     case 'switch':
       return <Switch {...commonProps} />;
@@ -37,7 +41,7 @@ const renderFormItem = (field: ConfigField, commonProps: any) => {
       return (
         <Select {...commonProps}>
           {field.options?.map(option => (
-            <Option key={option.value} value={option.value}>
+            <Option key={String(option.value)} value={option.value}>
               {option.label}
             </Option>
           ))}
@@ -47,7 +51,7 @@ const renderFormItem = (field: ConfigField, commonProps: any) => {
       return (
         <Radio.Group {...commonProps}>
           {field.options?.map(option => (
-            <Radio key={option.value} value={option.value}>
+            <Radio key={String(option.value)} value={option.value}>
               {option.label}
             </Radio>
           ))}
@@ -154,7 +158,7 @@ const ConfigRender: React.FC<ConfigRenderProps> = ({
 
   // 如果传入了 form，说明外部已经有 Form 组件，只渲染内容
   if (form) {
-    const handleFormFinish = (values: Record<string, any>) => {
+    const handleFormFinish = (values: Record<string, string | number | boolean>) => {
       console.log('ConfigRender: 表单提交，values:', values);
       if (onFinish) {
         onFinish(values);

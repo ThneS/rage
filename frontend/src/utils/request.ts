@@ -1,13 +1,36 @@
 import { message } from 'antd';
 import { API_BASE_URL } from '@/constants/api';
+interface ErrorResponse {
+  message?: string;
+  code?: number;
+}
 
-interface ApiResponse<T = any> {
+interface HttpError {
+  response?: {
+    status: number;
+    data: ErrorResponse;
+  };
+}
+
+interface ApiResponse<T = unknown> {
   data: T;
   message?: string;
   code?: number;
 }
 
-const handleError = (error: any) => {
+interface ErrorResponse {
+  message?: string;
+  code?: number;
+}
+
+interface HttpError {
+  response?: {
+    status: number;
+    data: ErrorResponse;
+  };
+}
+
+const handleError = (error: HttpError) => {
   if (error.response) {
     const { status, data } = error.response;
     switch (status) {
@@ -53,36 +76,38 @@ const request = async <T>(url: string, options: RequestInit = {}): Promise<T> =>
 
     return result.data;
   } catch (error) {
-    return handleError(error);
+    return handleError(error as HttpError);
   }
 };
 
-export const get = <T = any>(url: string, params?: Record<string, any>): Promise<T> => {
-  const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
+export const get = <T = unknown>(url: string, params?: Record<string, string | number | boolean>): Promise<T> => {
+  const queryString = params ? `?${new URLSearchParams(
+    Object.entries(params).map(([key, value]) => [key, String(value)])
+  ).toString()}` : '';
   return request<T>(`${url}${queryString}`);
 };
 
-export const post = <T = any>(url: string, data?: any): Promise<T> => {
+export const post = <T = unknown>(url: string, data?: Record<string, unknown>): Promise<T> => {
   return request<T>(url, {
     method: 'POST',
     body: JSON.stringify(data),
   });
 };
 
-export const put = <T = any>(url: string, data?: any): Promise<T> => {
+export const put = <T = unknown>(url: string, data?: Record<string, unknown>): Promise<T> => {
   return request<T>(url, {
     method: 'PUT',
     body: JSON.stringify(data),
   });
 };
 
-export const del = <T = any>(url: string): Promise<T> => {
+export const del = <T = unknown>(url: string): Promise<T> => {
   return request<T>(url, {
     method: 'DELETE',
   });
 };
 
-export const upload = async <T = any>(url: string, data: File | FormData): Promise<T> => {
+export const upload = async <T = unknown>(url: string, data: File | FormData): Promise<T> => {
   return request<T>(url, {
     method: 'POST',
     body: data,

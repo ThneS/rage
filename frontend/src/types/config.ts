@@ -1,9 +1,9 @@
 // 后端配置类型
 export interface ModelConfig {
-  openai: Record<string, any>;
-  deepseek: Record<string, any>;
-  anthropic: Record<string, any>;
-  local: Record<string, any>;
+  openai: Record<string, string | number | boolean>;
+  deepseek: Record<string, string | number | boolean>;
+  anthropic: Record<string, string | number | boolean>;
+  local: Record<string, string | number | boolean>;
 }
 
 export interface ConnectionConfig {

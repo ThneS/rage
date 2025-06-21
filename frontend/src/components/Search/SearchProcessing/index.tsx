@@ -21,12 +21,12 @@ interface SearchProcessingProps {
     postProcessResult: string | null;
 
     // Form values
-    vecStoreFormValues: Record<string, any>;
-    onVecStoreFormValuesChange: (values: Record<string, any>) => void;
-    preProcessFormValues: Record<string, any>;
-    onPreProcessFormValuesChange: (values: Record<string, any>) => void;
-    postProcessFormValues: Record<string, any>;
-    onPostProcessFormValuesChange: (values: Record<string, any>) => void;
+    vecStoreFormValues: Record<string, string | number | boolean>;
+    onVecStoreFormValuesChange: (values: Record<string, string | number | boolean>) => void;
+    preProcessFormValues: Record<string, string | number | boolean>;
+    onPreProcessFormValuesChange: (values: Record<string, string | number | boolean>) => void;
+    postProcessFormValues: Record<string, string | number | boolean>;
+    onPostProcessFormValuesChange: (values: Record<string, string | number | boolean>) => void;
 
     // Input state
     query: string;
@@ -115,8 +115,8 @@ const SearchProcessing: React.FC<SearchProcessingProps> = ({
 
 interface InputAreaProps {
     config: ConfigParams | null;
-    formValues: Record<string, any>;
-    onValuesChange: (values: Record<string, any>) => void;
+    formValues: Record<string, string | number | boolean>;
+    onValuesChange: (values: Record<string, string | number | boolean>) => void;
     value: string;
     onChange: (value: string) => void;
     onExecute: () => void;

@@ -19,7 +19,7 @@ interface LoadConfigProps {
   selectedDocument: Document | null;
   processing: boolean;
   onViewLoad?: () => void;
-  loadResult?: any;
+  loadResult?: Record<string, unknown>;
 }
 
 const LoadConfig: React.FC<LoadConfigProps> = ({
@@ -32,8 +32,8 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
   const { message } = App.useApp();
   const config = useAppSelector(state => state.document.config);
   const { loading, error } = useAppSelector(state => state.document);
-  const [formValues, setFormValues] = useState<Record<string, any>>({});
-  const [initialValues, setInitialValues] = useState<Record<string, any>>({});
+  const [formValues, setFormValues] = useState<Record<string, string | number | boolean>>({});
+  const [initialValues, setInitialValues] = useState<Record<string, string | number | boolean>>({});
   const dispatch = useAppDispatch();
 
   // 获取文档加载配置
@@ -52,10 +52,10 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
   }, [config, form]);
 
   // 监听表单值变化，同步更新到config
-  const handleValuesChange = (_: any, allValues: Record<string, any>) => {
+  const handleValuesChange = (_: Record<string, string | number | boolean>, allValues: Record<string, string | number | boolean>) => {
     setFormValues(allValues);
   };
-  const handleSubmit = async (values: Record<string, any>) => {
+  const handleSubmit = async (values: Record<string, string | number | boolean>) => {
     if (!config || !selectedDocument) {
       message.error('配置信息不完整');
       return;

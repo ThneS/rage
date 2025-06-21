@@ -24,17 +24,17 @@ const menuItems = [
   {
     key: '/document-loader',
     icon: <UploadOutlined />,
-    label: '文档上传',
+    label: '文档加载',
   },
   {
     key: '/chunk',
     icon: <MenuUnfoldOutlined />,
-    label: '分块处理',
+    label: '文档分块',
   },
   {
     key: '/embedding',
     icon: <ApartmentOutlined />,
-    label: '向量化',
+    label: '文档嵌入',
   },
   {
     key: '/vec-store',

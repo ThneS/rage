@@ -1,12 +1,12 @@
 export interface ConfigFieldOption {
   label: string;
-  value: any;
+  value: string | number | boolean;
   description?: string;
 }
 
 export interface ConfigDependency {
   field: string;
-  value: any;
+  value: string | number | boolean;
 }
 
 export interface ConfigField {
@@ -14,7 +14,7 @@ export interface ConfigField {
   label: string;
   type: 'switch' | 'select' | 'radio' | 'number' | 'text' | 'textarea' | 'range' | 'checkbox';
   description?: string;
-  default: any;
+  default: string | number | boolean;
   required?: boolean;
   options?: ConfigFieldOption[];
   min?: number;
@@ -33,7 +33,7 @@ export interface ConfigParams {
   description: string;
   icon?: string;
   fields: ConfigField[];
-  default_config: Record<string, any>;
+  default_config: Record<string, string | number | boolean>;
   group_order: string[];
 }
 

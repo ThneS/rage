@@ -8,7 +8,7 @@ import type { ConfigParams } from '@/types/commonConfig';
 interface ProcessingColumnProps {
   documentId: number;
   config: ConfigParams | null;
-  onFormValuesChange: (values: Record<string, any>) => void;
+  onFormValuesChange: (values: Record<string, string | number | boolean>) => void;
 }
 
 const ProcessingColumn = ({ documentId, config, onFormValuesChange }: ProcessingColumnProps) => {
