@@ -7,6 +7,7 @@ import {
   DatabaseOutlined,
   SearchOutlined,
   FilterOutlined,
+  SettingOutlined,
   // BarChartOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -66,10 +67,31 @@ const Sidebar: React.FC = () => {
       <Menu
         mode="inline"
         selectedKeys={[location.pathname]}
-        style={{ height: '100%', borderRight: 0 }}
-        items={menuItems}
+          style={{ height: '100%', borderRight: 0 }}
+          items={menuItems}
         onClick={({ key }) => navigate(key)}
       />
+      <div style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        borderTop: '1px solid #f0f0f0',
+        background: '#fff'
+      }}>
+        <Menu
+          mode="inline"
+          selectedKeys={[location.pathname]}
+          items={[
+            {
+              key: '/settings',
+              icon: <SettingOutlined />,
+              label: '设置',
+            }
+          ]}
+          onClick={({ key }) => navigate(key)}
+        />
+      </div>
     </StyledSider>
   );
 };

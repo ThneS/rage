@@ -8,6 +8,7 @@ import EmbeddingPage from '@/pages/EmbeddingPage';
 import VecStorePage from '@/pages/VecStorePage';
 import SearchPage from '@/pages/SearchPage';
 import GeneratePage from '@/pages/GeneratePage';
+import SettingPage from '@/pages/SettingPage';
 
 export const routes: RouteObject[] = [
   {
@@ -41,6 +42,10 @@ export const routes: RouteObject[] = [
       {
         path: 'generate',
         element: <GeneratePage />
+      },
+      {
+        path: 'settings',
+        element: <SettingPage />
       },
       {
         path: '*',

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Layout, Steps, Button, Space } from 'antd';
-import { SaveOutlined, PlayCircleOutlined, ImportOutlined, ExportOutlined } from '@ant-design/icons';
+import { SaveOutlined, /* PlayCircleOutlined ,*/ ImportOutlined, ExportOutlined } from '@ant-design/icons';
 import styled from '@emotion/styled';
 import { useLocation } from 'react-router-dom';
 
@@ -16,7 +16,7 @@ const StyledHeader = styled(AntHeader)`
 `;
 
 const Logo = styled.div`
-  font-size: 20px;
+  font-size: 15px;
   font-weight: bold;
   color: #1890ff;
 `;
@@ -45,7 +45,7 @@ const Header: React.FC = () => {
       />
       <Space>
         <Button icon={<SaveOutlined />}>保存配置</Button>
-        <Button icon={<PlayCircleOutlined />} type="primary">运行测试</Button>
+        {/* <Button icon={<PlayCircleOutlined />} type="primary">运行测试</Button> */}
         <Button icon={<ImportOutlined />}>导入配置</Button>
         <Button icon={<ExportOutlined />}>导出配置</Button>
       </Space>
