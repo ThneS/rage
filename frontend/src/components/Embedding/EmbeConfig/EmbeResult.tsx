@@ -5,7 +5,7 @@ import type {LangChainEmbedding} from "@/types/embedding";
 interface EmbeddingResultModalProps {
   visible: boolean;
   onCancel: () => void;
-  EmbeddingResult: LangChainEmbedding[] | null;
+  EmbeddingResult?: LangChainEmbedding[];
 }
 
 const EmbeddingResultModal: React.FC<EmbeddingResultModalProps> = ({

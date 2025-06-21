@@ -5,7 +5,7 @@ import type { LangChainDocument } from '@/types/document';
 interface LoadResultProps {
   open: boolean;
   onCancel: () => void;
-  loadResult: LangChainDocument[] | null;
+  loadResult?: LangChainDocument[];
 }
 
 const LoadResult: React.FC<LoadResultProps> = ({ open, onCancel, loadResult }) => {

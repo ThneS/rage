@@ -5,7 +5,7 @@ import type {LangChainVecStore} from "@/types/vecStore";
 interface VecStoreResultModalProps {
   visible: boolean;
   onCancel: () => void;
-  VecStoreResult: LangChainVecStore[] | null;
+  VecStoreResult?: LangChainVecStore[];
 }
 
 const VecStoreResultModal: React.FC<VecStoreResultModalProps> = ({

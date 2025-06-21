@@ -5,7 +5,7 @@ import type {LangChainChunk} from "@/types/chunk";
 interface ChunkResultModalProps {
   visible: boolean;
   onCancel: () => void;
-  ChunkResult: LangChainChunk[] | null;
+  ChunkResult?: LangChainChunk[];
 }
 
 const ChunkResultModal: React.FC<ChunkResultModalProps> = ({

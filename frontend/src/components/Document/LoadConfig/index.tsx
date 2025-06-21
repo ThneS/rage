@@ -8,7 +8,6 @@ import {
   Typography,
 } from 'antd';
 import type { Document, LangChainDocument } from '@/types/document';
-import type { ConfigParams } from '@/types/commonConfig';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { processDocument, fetchLoadConfig } from '@/store/slices/documentSlice';
 import ConfigRender from '@/components/Common/ConfigRender';
