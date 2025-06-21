@@ -137,7 +137,7 @@ const VecStorePage: React.FC = () => {
               <VecStoreConfig
                 selectedDocument={selectedDocument}
                 processing={loading}
-                VecStoreResult={vecStoreResult}
+                VecStoreResult={vecStoreResult || undefined}
                 onViewVecStore={handleViewVecStore}
               />
             ) : (
@@ -151,7 +151,7 @@ const VecStorePage: React.FC = () => {
       <VecStoreResult
         visible={modalVisible}
         onCancel={() => setModalVisible(false)}
-        VecStoreResult={vecStoreResult}
+        VecStoreResult={vecStoreResult || undefined}
       />
     </div>
   );

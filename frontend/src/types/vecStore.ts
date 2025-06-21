@@ -24,3 +24,14 @@ export interface LangChainVecStore {
   page_content: string;  // 文档内容
   metadata: VecStoreMetaData;
 }
+
+export interface LangChainVecStore {
+  id: number;
+  content: string;
+  metadata: {
+    source?: string;
+    page?: number;
+    chunk_id?: number;
+    [key: string]: string | number | boolean | undefined;
+  };
+}

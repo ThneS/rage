@@ -64,7 +64,7 @@ const EmbeddingPage: React.FC = () => {
               <EmbeddingConfig
                 selectedDocument={selectedDocument}
                 processing={loading}
-                EmbeddingResult={embeddingResult}
+                EmbeddingResult={embeddingResult || undefined}
                 onViewEmbedding={handleViewEmbedding}
               />
             ) : (
@@ -78,7 +78,7 @@ const EmbeddingPage: React.FC = () => {
       <EmbeddingResult
         visible={modalVisible}
         onCancel={() => setModalVisible(false)}
-        EmbeddingResult={embeddingResult}
+        EmbeddingResult={embeddingResult || undefined}
       />
     </div>
   );

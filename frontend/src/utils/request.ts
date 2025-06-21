@@ -87,14 +87,14 @@ export const get = <T = unknown>(url: string, params?: Record<string, string | n
   return request<T>(`${url}${queryString}`);
 };
 
-export const post = <T = unknown>(url: string, data?: Record<string, unknown>): Promise<T> => {
+export const post = <T = unknown>(url: string, data?: unknown): Promise<T> => {
   return request<T>(url, {
     method: 'POST',
     body: JSON.stringify(data),
   });
 };
 
-export const put = <T = unknown>(url: string, data?: Record<string, unknown>): Promise<T> => {
+export const put = <T = unknown>(url: string, data?: unknown): Promise<T> => {
   return request<T>(url, {
     method: 'PUT',
     body: JSON.stringify(data),

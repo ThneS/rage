@@ -18,3 +18,15 @@ export interface LangChainEmbedding {
   embedding: number[];  // 文档内容
   metadata: EmbeddingMetaData;
 }
+
+export interface LangChainEmbedding {
+  id: number;
+  content: string;
+  embedding: number[];
+  metadata: {
+    source?: string;
+    page?: number;
+    chunk_id?: number;
+    [key: string]: string | number | boolean | undefined;
+  };
+}

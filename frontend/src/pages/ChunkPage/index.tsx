@@ -64,7 +64,7 @@ const ChunkPage: React.FC = () => {
               <ChunkConfig
                 selectedDocument={selectedDocument}
                 processing={loading}
-                ChunkResult={chunkResult}
+                ChunkResult={chunkResult || undefined}
                 onViewChunk={handleViewChunk}
               />
             ) : (
@@ -78,7 +78,7 @@ const ChunkPage: React.FC = () => {
       <ChunkResult
         visible={modalVisible}
         onCancel={() => setModalVisible(false)}
-        ChunkResult={chunkResult}
+        ChunkResult={chunkResult || undefined}
       />
     </div>
   );

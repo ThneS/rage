@@ -1,6 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { documentService } from '@/services/documentService';
 import type { Document } from '@/types/document';
+import type { LangChainDocument } from '@/types/document';
 import type { AppThunk, AppDispatch, RootState } from '../types';
 import type { ConfigParams } from '@/types/commonConfig';
 import { DocumentStatus } from '@/types/commonConfig';

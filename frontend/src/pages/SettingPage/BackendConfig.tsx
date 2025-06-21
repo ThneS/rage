@@ -32,16 +32,17 @@ const BackendConfig: React.FC<BackendConfigProps> = ({ config, loading }) => {
     }
   }, [config, form]);
 
-  const handleFinish = async (values: Record<string, string | number | boolean>) => {
+  const handleFinish = async (values: any) => {
     try {
       // 处理 allowed_file_types 字符串转换为数组
       const processedValues: AllConfig = {
-        ...values,
+        model: values.model || {},
+        connection: values.connection || {},
         system: {
           ...values.system,
-          allowed_file_types: typeof values.system.allowed_file_types === 'string'
+          allowed_file_types: typeof values.system?.allowed_file_types === 'string'
             ? values.system.allowed_file_types.split(',').map((item: string) => item.trim()).filter(Boolean)
-            : values.system.allowed_file_types
+            : values.system?.allowed_file_types || []
         }
       };
 

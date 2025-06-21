@@ -1,12 +1,8 @@
 import React, { useMemo } from 'react';
 import { Form, Space, Tooltip, Typography, Tabs, Alert, Input, InputNumber, Select, Switch, Radio, Checkbox } from 'antd';
-import type { Document } from '@/types/document';
-import type { FormInstance } from 'antd/es/form';
 import type { ConfigField, ConfigParams } from '@/types/commonConfig';
 import type { Document } from '@/types/document';
 import type { FormInstance } from 'antd/es/form';
-
-const { Text } = Typography;
 const { Option } = Select;
 
 interface ConfigRenderProps {

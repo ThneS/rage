@@ -64,7 +64,7 @@ const DocumentLoader: React.FC = () => {
               <LoadConfig
                 selectedDocument={selectedDocument}
                 processing={processing}
-                loadResult={loadResult}
+                loadResult={loadResult || undefined}
                 onViewLoad={handleViewLoad}
               />
             ) : (
@@ -78,7 +78,7 @@ const DocumentLoader: React.FC = () => {
       <LoadResult
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
-        loadResult={loadResult}
+        loadResult={loadResult || undefined}
       />
     </div>
   );

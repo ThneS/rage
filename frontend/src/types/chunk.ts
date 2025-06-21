@@ -24,3 +24,13 @@ export interface LangChainChunk {
   page_content: string;  // 文档内容
   metadata: ChunkMetaData;
 }
+
+export interface LangChainChunk {
+  page_content: string;
+  metadata: {
+    source?: string;
+    page?: number;
+    chunk_id?: number;
+    [key: string]: string | number | boolean | undefined;
+  };
+}
