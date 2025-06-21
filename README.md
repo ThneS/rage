@@ -38,6 +38,16 @@
 - [ ] 模型配置界面
 - [ ] 数据库连接配置
 
+#### 5. 👤 用户管理系统
+- [ ] 用户注册页面
+- [ ] 用户登录页面
+- [ ] 用户认证和授权
+- [ ] 用户权限管理
+- [ ] 个人资料管理
+- [ ] 密码重置功能
+- [ ] 会话管理和安全
+- [ ] 用户活动日志
+
 ## 🛠️ 技术栈
 
 ### 后端
@@ -83,9 +93,6 @@ python scripts/dev.py dev-frontend  # 终端 2: 前端服务
 # 开发环境
 docker-compose up -d
 
-# 生产环境
-docker-compose -f docker-compose.prod.yml up -d
-
 # 访问地址
 # 前端: http://localhost
 # 后端: http://localhost:8000
@@ -96,23 +103,20 @@ docker-compose -f docker-compose.prod.yml up -d
 
 ```
 rage/
-├── frontend/           # React 前端
-│   ├── src/
-│   │   ├── components/ # 组件库
-│   │   ├── pages/      # 页面组件
-│   │   ├── services/   # API 服务
-│   │   └── types/      # TypeScript 类型
-│   └── package.json
-├── backend/            # FastAPI 后端
-│   ├── app/
-│   │   ├── api/        # API 路由
-│   │   ├── models/     # 数据模型
-│   │   ├── services/   # 业务逻辑
-│   │   └── main.py     # 应用入口
-│   └── requirements.txt
-├── scripts/            # 开发工具脚本
-├── .github/workflows/  # CI/CD 配置
-└── docker-compose.yml  # Docker 配置
+├── backend/           # 后端服务
+├── frontend/          # 前端应用
+├── docker/            # Docker 配置文件
+│   ├── docker-compose.yml      # 基础配置
+│   └── docker-compose.dev.yml  # 开发环境
+├── docs/              # 项目文档
+│   ├── DEPLOYMENT.md           # 部署指南
+│   ├── DEVELOPMENT.md          # 开发指南
+│   ├── DOCKER_USAGE.md         # Docker 使用指南
+│   ├── PROJECT_SUMMARY.md      # 项目概述
+│   └── QUICKSTART.md           # 快速开始
+├── scripts/           # 开发脚本
+└── .github/           # GitHub 配置
+    └── workflows/     # CI/CD 配置
 ```
 
 ## 🔧 开发工具
@@ -146,7 +150,7 @@ python scripts/dev.py status        # 检查状态
 
 ## 🔗 相关文档
 
-- [Docker 使用指南](DOCKER_USAGE.md)
-- [开发环境配置](DEVELOPMENT.md)
-- [部署指南](DEPLOYMENT.md)
-- [快速开始](QUICKSTART.md)
+- [Docker 使用指南](docs/DOCKER_USAGE.md)
+- [开发环境配置](docs/DEVELOPMENT.md)
+- [部署指南](docs/DEPLOYMENT.md)
+- [快速开始](docs/QUICKSTART.md)
