@@ -1,4 +1,4 @@
-import type { DocumentStatus } from "@/types/commonConfig";
+import type { DocumentStatus, ConfigField } from "@/types/commonConfig";
 
 export interface Document {
   id: number;
@@ -32,7 +32,7 @@ export interface FileTypeConfigResponse {
   name: string;
   description: string;
   icon?: string;
-  fields: any[];
+  fields: ConfigField[];
   default_config: Record<string, string | number | boolean>;
   group_order: string[];
 }
