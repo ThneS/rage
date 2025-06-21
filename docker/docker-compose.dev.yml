@@ -5,7 +5,7 @@ services:
   # 后端服务
   backend:
     build:
-      context: ./backend
+      context: ../backend
       dockerfile: Dockerfile
       target: development # 使用开发阶段
     container_name: rage-backend-dev
@@ -18,10 +18,10 @@ services:
       - MILVUS_HOST=milvus
       - MILVUS_PORT=19530
     volumes:
-      - ./backend:/app # 开发模式：挂载源码目录
-      - ./backend/uploads:/app/uploads
-      - ./backend/logs:/app/logs
-      - ./backend/.env:/app/.env:ro
+      - ../backend:/app # 开发模式：挂载源码目录
+      - ../backend/uploads:/app/uploads
+      - ../backend/logs:/app/logs
+      - ../backend/.env:/app/.env:ro
       - backend_data:/app/data
     ports:
       - "8000:8000"
@@ -50,7 +50,7 @@ services:
   # 前端服务 (开发模式)
   frontend:
     build:
-      context: ./frontend
+      context: ../frontend
       dockerfile: Dockerfile
       target: development # 使用开发阶段
     container_name: rage-frontend-dev
@@ -59,7 +59,7 @@ services:
       - NODE_ENV=development
       - VITE_API_BASE_URL=http://localhost:8000
     volumes:
-      - ./frontend:/app # 开发模式：挂载源码目录
+      - ../frontend:/app # 开发模式：挂载源码目录
       - /app/node_modules # 保护 node_modules
     ports:
       - "5173:5173" # Vite 开发服务器端口
@@ -99,25 +99,10 @@ services:
       retries: 5
       start_period: 90s # Milvus 启动需要时间
 
-  # 可选：Redis (开发环境缓存)
-  redis:
-    image: redis:7-alpine
-    container_name: rage-redis-dev
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    networks:
-      - rage-network
-    command: redis-server --appendonly yes
-    volumes:
-      - redis_data:/data
-
 volumes:
   backend_data:
     driver: local
   milvus_data:
-    driver: local
-  redis_data:
     driver: local
 
 networks:

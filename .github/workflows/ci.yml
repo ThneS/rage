@@ -88,45 +88,37 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./${{ matrix.component }}
-          push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ steps.meta.outputs.image_name }}-${{ matrix.component }}:${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ steps.meta.outputs.image_name }}-${{ matrix.component }}:latest
+      - name: Build and push Docker images
+        run: |
+          # 构建并推送后端镜像
+          docker build -t ${{ env.BACKEND_IMAGE }}:${{ env.IMAGE_TAG }} ./backend
+          docker push ${{ env.BACKEND_IMAGE }}:${{ env.IMAGE_TAG }}
+
+          # 构建并推送前端镜像
+          docker build -t ${{ env.FRONTEND_IMAGE }}:${{ env.IMAGE_TAG }} ./frontend
+          docker push ${{ env.FRONTEND_IMAGE }}:${{ env.IMAGE_TAG }}
 
   # 部署
   deploy:
-    needs: build
+    name: Deploy
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    needs: [test, build]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
 
     steps:
-      - name: Extract metadata
-        id: meta
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to development
+        if: github.ref == 'refs/heads/develop'
         run: |
-          # 将仓库名转换为小写
-          IMAGE_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          echo "image_name=${IMAGE_NAME}" >> $GITHUB_OUTPUT
+          echo "部署到开发环境"
+          # 这里可以添加实际的部署命令
+          # docker compose -f docker/docker-compose.dev.yml up -d
 
-      - name: Deploy to environment
+      - name: Deploy to production
+        if: github.ref == 'refs/heads/main'
         run: |
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "🚀 部署到生产环境"
-            ENV="production"
-          elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
-            echo "🚀 部署到开发环境"
-            ENV="development"
-          else
-            echo "⏭️ 跳过部署"
-            exit 0
-          fi
-
-          echo "环境: $ENV"
-          echo "后端镜像: ${{ env.REGISTRY }}/${{ steps.meta.outputs.image_name }}-backend:${{ github.sha }}"
-          echo "前端镜像: ${{ env.REGISTRY }}/${{ steps.meta.outputs.image_name }}-frontend:${{ github.sha }}"
-
-          # 这里添加实际的部署命令
-          # docker-compose up -d 或 kubectl apply 等
+          echo "部署到生产环境"
+          # 这里可以添加实际的部署命令
+          # docker compose -f docker/docker-compose.prod.yml up -d

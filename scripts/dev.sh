@@ -319,16 +319,12 @@ docker_build() {
 docker_up() {
     log_step "启动 Docker 服务..."
 
-    PROJECT_ROOT=$(get_project_root)
-    cd "$PROJECT_ROOT"
-
-    # 优先使用开发环境配置
-    if [ -f "docker-compose.dev.yml" ]; then
+    if [ -f "docker/docker-compose.dev.yml" ]; then
         log_info "使用开发环境配置 (Milvus Standalone 模式)"
-        docker compose -f docker-compose.dev.yml up -d
+        docker compose -f docker/docker-compose.dev.yml up -d
     else
-        log_info "使用默认配置"
-        docker compose up -d
+        log_info "使用基础配置"
+        docker compose -f docker/docker-compose.yml up -d
     fi
 }
 
@@ -336,31 +332,21 @@ docker_up() {
 docker_down() {
     log_step "停止 Docker 服务..."
 
-    PROJECT_ROOT=$(get_project_root)
-    cd "$PROJECT_ROOT"
-
-    # 检查并停止开发环境配置
-    if [ -f "docker-compose.dev.yml" ]; then
-        log_info "停止开发环境服务"
-        docker compose -f docker-compose.dev.yml down
+    if [ -f "docker/docker-compose.dev.yml" ]; then
+        docker compose -f docker/docker-compose.dev.yml down
+    else
+        docker compose -f docker/docker-compose.yml down
     fi
-
-    # 也停止默认配置
-    docker compose down
 }
 
 # 查看 Docker 日志
 docker_logs() {
-    log_step "查看 Docker 日志..."
+    log_step "查看 Docker 服务日志..."
 
-    PROJECT_ROOT=$(get_project_root)
-    cd "$PROJECT_ROOT"
-
-    # 优先使用开发环境配置
-    if [ -f "docker-compose.dev.yml" ]; then
-        docker compose -f docker-compose.dev.yml logs -f
+    if [ -f "docker/docker-compose.dev.yml" ]; then
+        docker compose -f docker/docker-compose.dev.yml logs -f
     else
-        docker compose logs -f
+        docker compose -f docker/docker-compose.yml logs -f
     fi
 }
 

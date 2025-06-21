@@ -84,16 +84,8 @@ ghcr.io/{owner}/{repo}-frontend:{commit-sha}
 - name: Deploy to environment
   run: |
     # 更新 docker-compose.yml 中的镜像标签
-    sed -i "s|image:.*-backend:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:${{ github.sha }}|" docker-compose.yml
-    docker-compose up -d
-```
-
-```yaml
-# 示例：Kubernetes 部署
-- name: Deploy to environment
-  run: |
-    kubectl set image deployment/backend backend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:${{ github.sha }}
-    kubectl set image deployment/frontend frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:${{ github.sha }}
+    sed -i "s|image:.*-backend:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:${{ github.sha }}|" docker/docker-compose.prod.yml
+    docker compose -f docker/docker-compose.prod.yml up -d
 ```
 
 ## 🚨 故障排除

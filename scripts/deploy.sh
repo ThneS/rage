@@ -59,7 +59,7 @@ deploy_services() {
     log_info "部署服务..."
 
     # 创建必要的目录
-    mkdir -p logs/nginx
+    mkdir -p logs
     mkdir -p backend/uploads
     mkdir -p backend/logs
 

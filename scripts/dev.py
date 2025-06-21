@@ -382,13 +382,13 @@ def docker_up():
     project_root = get_project_root()
 
     # 优先使用开发环境配置
-    dev_compose = project_root / "docker-compose.dev.yml"
+    dev_compose = project_root / "docker" / "docker-compose.dev.yml"
     if dev_compose.exists():
         log_info("使用开发环境配置 (Milvus Standalone 模式)")
-        return run_command(["docker", "compose", "-f", "docker-compose.dev.yml", "up", "-d"], cwd=project_root, check=False)
+        return run_command(["docker", "compose", "-f", "docker/docker-compose.dev.yml", "up", "-d"], cwd=project_root, check=False)
     else:
-        log_info("使用默认配置")
-        return run_command(["docker", "compose", "up", "-d"], cwd=project_root, check=False)
+        log_info("使用基础配置")
+        return run_command(["docker", "compose", "-f", "docker/docker-compose.yml", "up", "-d"], cwd=project_root, check=False)
 
 def docker_down():
     """停止 Docker 服务"""
@@ -397,26 +397,24 @@ def docker_down():
     project_root = get_project_root()
 
     # 检查并停止开发环境配置
-    dev_compose = project_root / "docker-compose.dev.yml"
+    dev_compose = project_root / "docker" / "docker-compose.dev.yml"
     if dev_compose.exists():
-        log_info("停止开发环境服务")
-        run_command(["docker", "compose", "-f", "docker-compose.dev.yml", "down"], cwd=project_root, check=False)
+        run_command(["docker", "compose", "-f", "docker/docker-compose.dev.yml", "down"], cwd=project_root, check=False)
+    else:
+        run_command(["docker", "compose", "-f", "docker/docker-compose.yml", "down"], cwd=project_root, check=False)
 
-    # 也停止默认配置
-    return run_command(["docker", "compose", "down"], cwd=project_root, check=False)
+    return True
 
 def docker_logs():
     """查看 Docker 日志"""
-    log_step("查看 Docker 日志...")
+    log_step("查看 Docker 服务日志...")
 
     project_root = get_project_root()
-
-    # 优先使用开发环境配置
-    dev_compose = project_root / "docker-compose.dev.yml"
+    dev_compose = project_root / "docker" / "docker-compose.dev.yml"
     if dev_compose.exists():
-        return run_command(["docker", "compose", "-f", "docker-compose.dev.yml", "logs", "-f"], cwd=project_root, check=False)
+        return run_command(["docker", "compose", "-f", "docker/docker-compose.dev.yml", "logs", "-f"], cwd=project_root, check=False)
     else:
-        return run_command(["docker", "compose", "logs", "-f"], cwd=project_root, check=False)
+        return run_command(["docker", "compose", "-f", "docker/docker-compose.yml", "logs", "-f"], cwd=project_root, check=False)
 
 def status():
     """检查服务状态"""
