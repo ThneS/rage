@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { Card, Form, Input, Button, Select, Switch, message, InputNumber } from 'antd';
-import type { FrontendConfig } from '@/types/config';
+import type { FrontendConfig as FrontendConfigType } from '@/types/config';
 import { useAppDispatch } from '@/store';
 import { saveFrontendConfig } from '@/store/slices/configSlice';
 
 interface FrontendConfigProps {
-  config: FrontendConfig;
+  config: FrontendConfigType;
   loading: boolean;
 }
 
@@ -19,7 +19,7 @@ const FrontendConfig: React.FC<FrontendConfigProps> = ({ config, loading }) => {
     }
   }, [config, form]);
 
-  const handleFinish = async (values: FrontendConfig) => {
+  const handleFinish = async (values: FrontendConfigType) => {
     try {
       await dispatch(saveFrontendConfig(values));
       message.success('前端配置保存成功');

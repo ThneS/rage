@@ -35,14 +35,18 @@ const BackendConfig: React.FC<BackendConfigProps> = ({ config, loading }) => {
   const handleFinish = async (values: Record<string, unknown>) => {
     try {
       // 处理 allowed_file_types 字符串转换为数组
+      const modelConfig = values.model as Record<string, unknown> || {};
+      const connectionConfig = values.connection as Record<string, unknown> || {};
+      const systemConfig = values.system as Record<string, unknown> || {};
+
       const processedValues: AllConfig = {
-        model: values.model || {},
-        connection: values.connection || {},
+        model: modelConfig as unknown as AllConfig['model'],
+        connection: connectionConfig as unknown as AllConfig['connection'],
         system: {
-          ...values.system,
-          allowed_file_types: typeof values.system?.allowed_file_types === 'string'
-            ? values.system.allowed_file_types.split(',').map((item: string) => item.trim()).filter(Boolean)
-            : values.system?.allowed_file_types || []
+          ...(systemConfig as unknown as AllConfig['system']),
+          allowed_file_types: typeof systemConfig?.allowed_file_types === 'string'
+            ? (systemConfig.allowed_file_types as string).split(',').map((item: string) => item.trim()).filter(Boolean)
+            : (systemConfig?.allowed_file_types as string[]) || []
         }
       };
 

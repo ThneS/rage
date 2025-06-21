@@ -1,3 +1,4 @@
+import type { LangChainVecStore } from "@/types/vecStore";
 import React, { useEffect, useState } from 'react';
 import {
   Card,
@@ -19,7 +20,7 @@ interface VecStoreConfigProps {
   selectedDocument: Document | null;
   processing: boolean;
   onViewVecStore?: () => void;
-  VecStoreResult?: Record<string, unknown>;
+  VecStoreResult?: LangChainVecStore[];
 }
 
 const VecStoreConfig: React.FC<VecStoreConfigProps> = ({

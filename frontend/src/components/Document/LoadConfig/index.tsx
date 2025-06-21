@@ -7,7 +7,7 @@ import {
   App,
   Typography,
 } from 'antd';
-import type { Document } from '@/types/document';
+import type { Document, LangChainDocument } from '@/types/document';
 import type { ConfigParams } from '@/types/commonConfig';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { processDocument, fetchLoadConfig } from '@/store/slices/documentSlice';
@@ -19,7 +19,7 @@ interface LoadConfigProps {
   selectedDocument: Document | null;
   processing: boolean;
   onViewLoad?: () => void;
-  loadResult?: Record<string, unknown>;
+  loadResult?: LangChainDocument[];
 }
 
 const LoadConfig: React.FC<LoadConfigProps> = ({
@@ -60,14 +60,18 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
       message.error('配置信息不完整');
       return;
     }
-    // 合并配置信息和表单值
-    const submitConfig: ConfigParams = {
-      ...config,
-      default_config: {
+
+    // 创建 DocumentLoadConfig 对象
+    const submitConfig = {
+      file_path: selectedDocument.file_path,
+      file_type: selectedDocument.file_type,
+      loader_name: config.name || 'default',
+      loader_config: {
         ...config.default_config,
         ...values
       }
     };
+
     dispatch(processDocument(selectedDocument.id, submitConfig));
   };
 

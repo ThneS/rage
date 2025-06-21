@@ -18,20 +18,12 @@ export interface VecStoreMetaData {
   source?: string;     // 文档来源
   page?: number;       // 页码（如果有）
   chunk_id?: number;   // 分块ID
-}
-
-export interface LangChainVecStore {
-  page_content: string;  // 文档内容
-  metadata: VecStoreMetaData;
+  [key: string]: string | number | boolean | undefined;
 }
 
 export interface LangChainVecStore {
   id: number;
   content: string;
-  metadata: {
-    source?: string;
-    page?: number;
-    chunk_id?: number;
-    [key: string]: string | number | boolean | undefined;
-  };
+  page_content: string;  // 文档内容
+  metadata: VecStoreMetaData;
 }

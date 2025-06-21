@@ -18,19 +18,10 @@ export interface ChunkMetaData {
   source?: string;     // 文档来源
   page?: number;       // 页码（如果有）
   chunk_id?: number;   // 分块ID
+  [key: string]: string | number | boolean | undefined;
 }
 
 export interface LangChainChunk {
   page_content: string;  // 文档内容
   metadata: ChunkMetaData;
-}
-
-export interface LangChainChunk {
-  page_content: string;
-  metadata: {
-    source?: string;
-    page?: number;
-    chunk_id?: number;
-    [key: string]: string | number | boolean | undefined;
-  };
 }

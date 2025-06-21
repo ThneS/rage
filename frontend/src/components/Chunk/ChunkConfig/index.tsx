@@ -9,6 +9,7 @@ import {
 } from 'antd';
 import type { Document } from '@/types/document';
 import type { ConfigParams } from '@/types/commonConfig';
+import type { LangChainChunk } from '@/types/chunk';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { fetchChunkConfig, processChunk } from '@/store/slices/chunkSlice';
 import ConfigRender from '@/components/Common/ConfigRender';
@@ -19,7 +20,7 @@ interface ChunkConfigProps {
   selectedDocument: Document | null;
   processing: boolean;
   onViewChunk?: () => void;
-  ChunkResult?: Record<string, unknown>;
+  ChunkResult?: LangChainChunk[];
 }
 
 const ChunkConfig: React.FC<ChunkConfigProps> = ({

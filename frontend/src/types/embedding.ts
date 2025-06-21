@@ -11,22 +11,14 @@ export interface Embedding {
 export interface EmbeddingMetaData {
   source?: string;     // 文档来源
   page?: number;       // 页码（如果有）
-  embedding_id?: number;   // 分块ID
-}
-
-export interface LangChainEmbedding {
-  embedding: number[];  // 文档内容
-  metadata: EmbeddingMetaData;
+  embedding_id?: number;   // 嵌入ID
+  chunk_id?: number;   // 分块ID
+  [key: string]: string | number | boolean | undefined;
 }
 
 export interface LangChainEmbedding {
   id: number;
   content: string;
-  embedding: number[];
-  metadata: {
-    source?: string;
-    page?: number;
-    chunk_id?: number;
-    [key: string]: string | number | boolean | undefined;
-  };
+  embedding: number[];  // 嵌入向量
+  metadata: EmbeddingMetaData;
 }

@@ -1,3 +1,4 @@
+import type { LangChainEmbedding } from "@/types/embedding";
 import React, { useEffect, useState } from 'react';
 import {
   Card,
@@ -19,7 +20,7 @@ interface EmbeddingConfigProps {
   selectedDocument: Document | null;
   processing: boolean;
   onViewEmbedding?: () => void;
-  EmbeddingResult?: Record<string, unknown>;
+  EmbeddingResult?: LangChainEmbedding[];
 }
 
 const EmbeddingConfig: React.FC<EmbeddingConfigProps> = ({
