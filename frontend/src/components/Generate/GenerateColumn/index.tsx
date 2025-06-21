@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, Typography, Spin, Divider, Button, message, Form, Empty } from 'antd';
 import { useAppDispatch } from '@/store';
 import { runGenerate } from '@/store/slices/generateSlice';
 import ConfigRender from '@/components/Common/ConfigRender';
 import type { ConfigParams } from '@/types/commonConfig';
+import type { Document } from '@/types/document';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -13,11 +14,19 @@ interface GenerateColumnProps {
   formValues: Record<string, any>;
   result: string | null;
   processing: boolean;
+  selectedDocument?: Document | null;
 }
 
-const GenerateColumn = ({ documentId, config, formValues, result, processing }: GenerateColumnProps) => {
+const GenerateColumn = ({ documentId, config, formValues, result, processing, selectedDocument }: GenerateColumnProps) => {
   const [form] = Form.useForm();
   const dispatch = useAppDispatch();
+
+  // 当配置变化时，重置表单值
+  useEffect(() => {
+    if (config && config.default_config) {
+      form.setFieldsValue(config.default_config);
+    }
+  }, [config, form]);
 
   const handleGenerate = async (values: Record<string, any>) => {
     try {
@@ -26,6 +35,11 @@ const GenerateColumn = ({ documentId, config, formValues, result, processing }: 
     } catch (error) {
       message.error('生成失败: ' + (error instanceof Error ? error.message : '未知错误'));
     }
+  };
+
+  const handleValuesChange = (changed: any, allValues: Record<string, any>) => {
+    // 这里可以处理配置变化，如果需要的话
+    console.log('配置值变化:', changed, allValues);
   };
 
   if (!config) {
@@ -38,17 +52,19 @@ const GenerateColumn = ({ documentId, config, formValues, result, processing }: 
   }
 
   return (
-    <Card title={config.name} style={{ height: '100%' }}>
+    <Card title="生成配置" style={{ height: '100%' }}>
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         {/* 生成配置 */}
         <div style={{ flex: '0 0 auto', marginBottom: '20px' }}>
           <ConfigRender
-            form={form}
             config={config}
+            formValues={formValues}
+            processing={processing}
+            selectedDocument={selectedDocument}
+            onValuesChange={handleValuesChange}
             onFinish={handleGenerate}
-            onValuesChange={(_, allValues) => {
-              // 这里可以处理配置变化
-            }}
+            form={form}
+            initialValues={config.default_config}
           >
             <Button type="primary" htmlType="submit" loading={processing} style={{ marginTop: '10px' }}>
               生成

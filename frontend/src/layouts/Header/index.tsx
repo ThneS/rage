@@ -8,16 +8,18 @@ const { Header: AntHeader } = Layout;
 const StyledHeader = styled(AntHeader)`
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   padding: 0 24px;
   background: #fff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  gap: 40px;
 `;
 
 const Logo = styled.div`
   font-size: 15px;
   font-weight: bold;
   color: #1890ff;
+  flex-shrink: 0;
 `;
 
 const steps = [
@@ -40,7 +42,7 @@ const Header: React.FC = () => {
       <Steps
         current={currentStep}
         items={steps.map(step => ({ title: step.title }))}
-        style={{ width: '60%', marginLeft: 0 }}
+        style={{ flex: '1 1 auto' }}
       />
       {/* <Space>
         <Button icon={<SaveOutlined />}>保存配置</Button>

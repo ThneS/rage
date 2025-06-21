@@ -17,11 +17,12 @@ const { Sider } = Layout;
 const StyledSider = styled(Sider)`
   background: #fff;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.06);
+  position: relative;
 `;
 
 const menuItems = [
   {
-    key: '/document',
+    key: '/document-loader',
     icon: <UploadOutlined />,
     label: '文档上传',
   },
@@ -63,13 +64,22 @@ const Sidebar: React.FC = () => {
 
   return (
     <StyledSider width={200}>
-      <Menu
-        mode="inline"
-        selectedKeys={[location.pathname]}
-          style={{ height: '100%', borderRight: 0 }}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: '48px',
+        overflowY: 'auto'
+      }}>
+        <Menu
+          mode="inline"
+          selectedKeys={[location.pathname]}
+          style={{ borderRight: 0, height: '100%' }}
           items={menuItems}
-        onClick={({ key }) => navigate(key)}
-      />
+          onClick={({ key }) => navigate(key)}
+        />
+      </div>
       <div style={{
         position: 'absolute',
         bottom: 0,
@@ -81,6 +91,7 @@ const Sidebar: React.FC = () => {
         <Menu
           mode="inline"
           selectedKeys={[location.pathname]}
+          style={{ borderRight: 0 }}
           items={[
             {
               key: '/settings',

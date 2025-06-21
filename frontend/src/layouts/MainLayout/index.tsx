@@ -8,14 +8,13 @@ import styled from '@emotion/styled';
 const { Content } = Layout;
 
 const StyledLayout = styled(Layout)`
-  min-height: 100vh;
+  height: 100vh;
 `;
 
 const StyledContent = styled(Content)`
   margin: 24px 16px;
   padding: 24px;
   background: #fff;
-  min-height: 280px;
   overflow: auto;
 `;
 
@@ -23,7 +22,7 @@ const MainLayout: React.FC = () => {
   return (
     <StyledLayout>
       <Header />
-      <Layout>
+      <Layout style={{ height: 'calc(100vh - 64px)' }}>
         <Sidebar />
         <StyledContent>
           <Outlet />
