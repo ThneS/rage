@@ -46,20 +46,3 @@ export interface LangChainDocument {
     [key: string]: string | number | boolean | undefined;  // 其他元数据
   };
 }
-
-// 添加缺失的类型定义
-export interface DocumentLoadConfig {
-  file_path: string;
-  file_type: string;
-  loader_name: string;
-  loader_config: Record<string, string | number | boolean>;
-}
-
-export interface FileTypeConfigResponse {
-  name: string;
-  description: string;
-  icon?: string;
-  fields: any[];
-  default_config: Record<string, string | number | boolean>;
-  group_order: string[];
-}
