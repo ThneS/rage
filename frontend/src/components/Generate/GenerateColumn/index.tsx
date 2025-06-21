@@ -42,12 +42,12 @@ const GenerateColumn = ({ documentId, config, formValues, result, processing, se
 
     try {
       await dispatch(runGenerate(documentId, mergedConfig));
-    } catch (error) {
+    } catch {
       // 错误已经在 slice 中处理
     }
   };
 
-  const handleValuesChange = (_: Record<string, string | number | boolean>, __: Record<string, string | number | boolean>) => {
+  const handleValuesChange = () => {
     // 这里可以处理配置变化，如果需要的话
   };
 
