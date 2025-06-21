@@ -2,6 +2,57 @@
 
 > 🚧 **开发中** - 一个用于 RAG（检索增强生成）系统参数调优的全栈平台
 
+## 📸 功能展示
+
+### 主界面概览
+![主界面](docs/images/dashboard-overview.png)
+
+*完整的RAG参数调测平台界面，包含侧边栏导航和主要功能区域*
+
+### 核心功能模块
+
+#### 1. 文档加载管理
+![文档加载页面](docs/images/document-loader.png)
+
+- 支持多种文档格式上传 (PDF, DOCX, TXT等)
+- 文档预览和管理功能
+- 批量处理和状态跟踪
+
+#### 2. 文档分块配置
+![文档分块配置](docs/images/chunk-configuration.png)
+
+- 灵活的分块策略选择
+- 可视化参数配置界面
+- 实时预览分块效果
+
+#### 3. 向量嵌入设置
+![向量嵌入配置](docs/images/embedding-configuration.png)
+
+- 多种嵌入模型支持
+- 参数调优界面
+- 嵌入效果预览
+
+#### 4. 检索参数调优
+![检索配置](docs/images/search-configuration.png)
+
+- 相似度阈值设置
+- Top-K 参数配置
+- 检索策略选择
+
+#### 5. 生成参数配置
+![生成配置](docs/images/generate-configuration.png)
+
+- 温度、Max Tokens等参数调节
+- Prompt模板管理
+- 生成效果实时预览
+
+#### 6. 向量存储管理
+![向量存储配置](docs/images/vec-store-configuration.png)
+
+- 向量数据库配置
+- 存储策略设置
+- 性能监控
+
 ## 📋 项目状态
 
 ### ✅ 已完成功能
