@@ -125,6 +125,7 @@ const ChunkConfig: React.FC<ChunkConfigProps> = ({
               processing={processing}
               error={error}
               selectedDocument={selectedDocument}
+              onValuesChange={handleValuesChange}
             />
           </div>
           <Form.Item className="mt-4 mb-0">

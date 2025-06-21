@@ -7,13 +7,16 @@ const { Option } = Select;
 
 interface ConfigRenderProps {
   config: ConfigParams | null;
-  formValues: Record<string, any>;
-  processing: boolean;
+  formValues?: Record<string, any>;
+  processing?: boolean;
   error?: string | null;
-  onValuesChange: (changed: any, all: Record<string, any>) => void;
+  onValuesChange?: (changed: any, all: Record<string, any>) => void;
   initialValues?: Record<string, any>;
   selectedDocument?: any;
   children?: React.ReactNode;
+  // 表单包装器模式
+  form?: any;
+  onFinish?: (values: Record<string, any>) => void;
 }
 
 const shouldShowField = (field: ConfigField, formValues: Record<string, any>): boolean => {
@@ -95,14 +98,17 @@ const renderFormItem = (field: ConfigField, commonProps: any) => {
 
 const ConfigRender: React.FC<ConfigRenderProps> = ({
   config,
-  formValues,
-  processing,
+  formValues = {},
+  processing = false,
   error,
   onValuesChange,
   selectedDocument,
   children,
+  form,
+  onFinish,
 }) => {
-  const [form] = Form.useForm();
+  const [internalForm] = Form.useForm();
+  const currentForm = form || internalForm;
 
   // 组装分组
   const formGroups = useMemo(() => {
@@ -146,13 +152,16 @@ const ConfigRender: React.FC<ConfigRenderProps> = ({
     return groups;
   }, [config, formValues, processing, selectedDocument]);
 
+  const formProps = {
+    form: currentForm,
+    layout: "vertical" as const,
+    initialValues: config?.default_config,
+    onValuesChange: onValuesChange,
+    onFinish: onFinish,
+  };
+
   return (
-    <Form
-        form={form}
-        layout="vertical"
-        initialValues={config?.default_config}
-        onValuesChange={onValuesChange}
-    >
+    <Form {...formProps}>
       {error && (
         <Alert
           message="处理失败"

@@ -26,6 +26,7 @@ const DocumentLoader: React.FC = () => {
           <DocumentList
             onSelectDocument={handleSelectDocument}
             selectedId={selectedDocument?.id}
+            showUpload={true}
           />
         </Col>
         <Col span={12} className="h-full">

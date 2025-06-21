@@ -74,7 +74,7 @@ const SearchPage: React.FC = () => {
   return (
     <Row gutter={16} style={{ height: '100%' }}>
       <Col span={8}>
-        <DocumentList onSelectDocument={handleSelectDocument} selectedId={selectedDocument?.id} />
+        <DocumentList onSelectDocument={handleSelectDocument} selectedId={selectedDocument?.id} showUpload={false} />
       </Col>
       <Col span={16}>
         <SearchProcessing

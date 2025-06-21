@@ -125,7 +125,7 @@ interface InputAreaProps {
 const InputArea: React.FC<InputAreaProps> = ({ config, formValues, onValuesChange, value, onChange, onExecute }) => {
     return (
         <>
-            {config && <ConfigRender config={config} formValues={formValues} onValuesChange={(_, all) => onValuesChange(all)} processing={true} />}
+            {config && <ConfigRender config={config} formValues={formValues} onValuesChange={(_, all) => onValuesChange(all)} processing={false} />}
             <Input.TextArea
                 rows={4}
                 value={value}

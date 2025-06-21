@@ -119,6 +119,7 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
               processing={processing}
               error={undefined}
               selectedDocument={selectedDocument}
+              onValuesChange={handleValuesChange}
             />
           </div>
           <Form.Item className="mt-4 mb-0">

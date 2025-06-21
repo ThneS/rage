@@ -1,8 +1,7 @@
-import { createSlice } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
-import type { AppThunk, AppDispatch } from '@/store/types';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { documentService } from '@/services/documentService';
-import type { Document, LangChainDocument } from '@/types/document';
+import type { Document } from '@/types/document';
+import type { AppThunk, AppDispatch, RootState } from '../types';
 import type { ConfigParams } from '@/types/commonConfig';
 import { DocumentStatus } from '@/types/commonConfig';
 
@@ -13,6 +12,7 @@ export interface DocumentState {
   loadResult: LangChainDocument[] | null;
   loading: boolean;
   error: string | null;
+  selectedId: number | null;
 }
 
 const initialState: DocumentState = {
@@ -22,6 +22,7 @@ const initialState: DocumentState = {
   loadResult: null,
   loading: false,
   error: null,
+  selectedId: null,
 };
 
 const documentSlice = createSlice({
@@ -31,6 +32,7 @@ const documentSlice = createSlice({
     setDocuments: (state, action: PayloadAction<Document[]>) => {
       state.documents = action.payload;
       state.error = null;
+      state.loading = false;
     },
     setCurrentDocument: (state, action: PayloadAction<Document | null>) => {
       state.currentDocument = action.payload;
@@ -49,10 +51,13 @@ const documentSlice = createSlice({
     setLoadResult: (state, action: PayloadAction<LangChainDocument[] | null>) => {
       state.loadResult = action.payload;
     },
+    selectDocument: (state, action: PayloadAction<number | null>) => {
+      state.selectedId = action.payload;
+    },
   },
 });
 
-export const { setDocuments, setCurrentDocument, setLoading, setError, setConfig, setLoadResult } = documentSlice.actions;
+export const { setDocuments, setCurrentDocument, setLoading, setError, setConfig, setLoadResult, selectDocument } = documentSlice.actions;
 
 // Thunks
 export const fetchDocuments = (): AppThunk => async (dispatch: AppDispatch) => {
@@ -150,3 +155,8 @@ export const pollDocumentStatus = (documentId: number): AppThunk => async (dispa
 };
 
 export default documentSlice.reducer;
+
+export const selectSelectedDocument = (state: RootState) => {
+    const { documents, selectedId } = state.document;
+    return documents.find(doc => doc.id === selectedId) || null;
+}

@@ -14,5 +14,5 @@ def generate(document_id: int, request: GenerateRequest) -> GenerateResult:
     生成逻辑
     """
     # config = request.config
-    text = f"这是基于文档 {document_id} 和配置 {request.config} 生成的结果。"
+    text = f"基于文档 {document_id} 和配置 {request.config} 生成的结果。"
     return GenerateResult(text=text)

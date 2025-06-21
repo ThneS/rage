@@ -32,9 +32,10 @@ const iconMap = {
 interface DocumentListProps {
   onSelectDocument?: (document: Document) => void;
   selectedId?: number;
+  showUpload?: boolean;
 }
 
-const DocumentList: React.FC<DocumentListProps> = ({ onSelectDocument, selectedId }) => {
+const DocumentList: React.FC<DocumentListProps> = ({ onSelectDocument, selectedId, showUpload = false }) => {
   const dispatch = useAppDispatch();
   const { documents, loading } = useAppSelector((state) => state.document);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
@@ -110,19 +111,21 @@ const DocumentList: React.FC<DocumentListProps> = ({ onSelectDocument, selectedI
 
   return (
     <Card title="文档列表">
-      <Dragger
-        fileList={fileList}
-        beforeUpload={handleUpload}
-        onChange={({ fileList }) => setFileList(fileList)}
-        showUploadList={false}
-      >
-        <p className="ant-upload-drag-icon">
-          <UploadOutlined />
-        </p>
-        <p className="ant-upload-text">点击或拖拽文件到此区域上传</p>
-      </Dragger>
+      {showUpload && (
+        <Dragger
+          fileList={fileList}
+          beforeUpload={handleUpload}
+          onChange={({ fileList }) => setFileList(fileList)}
+          showUploadList={false}
+        >
+          <p className="ant-upload-drag-icon">
+            <UploadOutlined />
+          </p>
+          <p className="ant-upload-text">点击或拖拽文件到此区域上传</p>
+        </Dragger>
+      )}
       <Table
-        style={{ marginTop: 16 }}
+        style={{ marginTop: showUpload ? 16 : 0 }}
         loading={loading}
         rowKey="id"
         columns={columns}
