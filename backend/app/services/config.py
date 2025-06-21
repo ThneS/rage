@@ -1,7 +1,7 @@
 import json
 from typing import Dict, Any, Optional
 from sqlalchemy.orm import Session
-from app.models.config import Config
+from app.models.configuration import Config
 from app.schemas.config import ConfigCreate, ConfigUpdate, AllConfig, ModelConfig, ConnectionConfig, SystemConfig
 from fastapi import HTTPException
 

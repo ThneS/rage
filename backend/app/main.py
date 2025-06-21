@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.v1.endpoints import documents, chunks, embeddings, search, generate, config
+from app.api.v1.endpoints import documents, chunks, embeddings, search, generate
+from app.api.v1.endpoints import settings as settings_router
 from app.core.database import engine, Base
 from fastapi.responses import JSONResponse
 from fastapi import Request, HTTPException
@@ -103,7 +104,7 @@ app.include_router(
 )
 
 app.include_router(
-    config.router,
+    settings_router.router,
     prefix=f"{settings.API_V1_STR}/config",
     tags=["config"]
 )
