@@ -48,7 +48,7 @@ const BackendConfig: React.FC<BackendConfigProps> = ({ config, loading }) => {
       await dispatch(updateBackendConfig(processedValues));
       message.success('后端配置保存成功');
       dispatch(fetchBackendConfig());
-    } catch (error) {
+    } catch {
       message.error('保存失败');
     }
   };

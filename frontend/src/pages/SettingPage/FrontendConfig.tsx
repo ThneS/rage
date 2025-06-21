@@ -23,7 +23,7 @@ const FrontendConfig: React.FC<FrontendConfigProps> = ({ config, loading }) => {
     try {
       await dispatch(saveFrontendConfig(values));
       message.success('前端配置保存成功');
-    } catch (error) {
+    } catch {
       message.error('保存失败');
     }
   };

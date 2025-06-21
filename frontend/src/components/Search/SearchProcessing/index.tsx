@@ -5,7 +5,6 @@ import PostProcessColumn from '../PostProcessColumn';
 import type { Document } from '@/types/document';
 import type { ConfigParams } from '@/types/commonConfig';
 import ConfigRender from '@/components/Common/ConfigRender';
-import { useAppSelector } from '@/store';
 
 const { Step } = Steps;
 

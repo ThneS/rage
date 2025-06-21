@@ -23,7 +23,7 @@ const SearchPage: React.FC = () => {
     preProcessResult,
     postProcessResult,
     parseResult,
-    loading,
+    loading: _loading,
   } = useAppSelector((state) => state.search);
 
   const selectedDocument = useAppSelector(selectSelectedDocument);

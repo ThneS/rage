@@ -58,7 +58,7 @@ const DocumentList: React.FC<DocumentListProps> = ({ onSelectDocument, selectedI
       await dispatch(uploadDocument(file));
       message.success('上传成功');
       setFileList([]);
-    } catch (error) {
+    } catch {
       message.error('上传失败');
     }
     return false;

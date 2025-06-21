@@ -20,7 +20,7 @@ const LoadResult: React.FC<LoadResultProps> = ({ open, onCancel, loadResult }) =
       {loadResult && loadResult.length > 0 ? (
         <div style={{ maxHeight: 500, overflow: 'auto' }}>
           {loadResult.map((doc, idx) => {
-            const { source, producer, page, page_label, ...restMeta } = doc.metadata || {};
+            const { source: _source, producer: _producer, page: _page, page_label: _pageLabel, ...restMeta } = doc.metadata || {};
             const metaTooltip = Object.keys(restMeta).length > 0 ? (
               <pre style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{JSON.stringify(restMeta, null, 2)}</pre>
             ) : null;
