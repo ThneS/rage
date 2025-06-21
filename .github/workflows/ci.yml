@@ -39,6 +39,7 @@ jobs:
           npm ci
           npm run type-check
           npm run lint
+          npm test --if-present
           npm run build
 
       # 后端测试
@@ -57,7 +58,7 @@ jobs:
           pip install -r requirements.txt
           pip install pytest mypy
           mypy app/ --ignore-missing-imports || true
-          pytest tests/ || true
+          pytest tests/ -v || true
 
   # 构建镜像
   build:

@@ -200,7 +200,7 @@ docker-compose -f deploy/docker-compose.prod.yml up -d
 - 在 Packages 页面查看构建的镜像
 - 支持手动重新运行失败的作业
 
-详细配置说明请参考 [CI/CD 文档](.github/README.md)。
+详细配置说明请参考 [CI/CD 文档](.github/CI_CD_GUIDE.md)。
 
 ## 部署方案
 

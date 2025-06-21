@@ -444,6 +444,19 @@ def status():
     except Exception:
         log_warn("✗ 前端服务无法访问")
 
+def validate_ci():
+    """验证 CI/CD 配置"""
+    log_step("验证 CI/CD 配置...")
+
+    project_root = get_project_root()
+    validate_script = project_root / "scripts" / "validate-ci.py"
+
+    if not validate_script.exists():
+        log_error("验证脚本不存在")
+        return False
+
+    return run_command([sys.executable, str(validate_script)], cwd=project_root, check=False)
+
 def show_help():
     """显示帮助信息"""
     help_text = f"""
@@ -481,6 +494,7 @@ def show_help():
 
 {Colors.YELLOW}其他:{Colors.NC}
     status           检查服务状态
+    validate-ci      验证 CI/CD 配置
     help             显示此帮助信息
 
 {Colors.WHITE}示例:{Colors.NC}
@@ -519,6 +533,7 @@ def main():
         'docker-down': docker_down,
         'docker-logs': docker_logs,
         'status': status,
+        'validate-ci': validate_ci,
     }
 
     if command in commands:
