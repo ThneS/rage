@@ -156,21 +156,8 @@ const ConfigRender: React.FC<ConfigRenderProps> = ({
 
   // 如果传入了 form，说明外部已经有 Form 组件，只渲染内容
   if (form) {
-    const handleFormFinish = (values: Record<string, string | number | boolean>) => {
-      console.log('ConfigRender: 表单提交，values:', values);
-      if (onFinish) {
-        onFinish(values);
-      }
-    };
-
     return (
-      <Form
-        form={form}
-        layout="vertical"
-        initialValues={config?.default_config}
-        onValuesChange={onValuesChange}
-        onFinish={handleFormFinish}
-      >
+      <>
         {error && (
           <Alert
             message="处理失败"
@@ -188,7 +175,7 @@ const ConfigRender: React.FC<ConfigRenderProps> = ({
         )}
         <Tabs tabPosition="top" style={{ height: '100%' }} items={formGroups} />
         {children}
-      </Form>
+      </>
     );
   }
 
