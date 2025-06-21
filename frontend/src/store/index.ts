@@ -8,6 +8,7 @@ import embeddingReducer from './slices/embeddingSlice';
 import searchReducer from './slices/searchSlice';
 import vecStoreReducer from './slices/vecStoreSlice';
 import generateReducer from './slices/generateSlice';
+import configReducer from './slices/configSlice';
 
 // 创建 store
 export const store = configureStore({
@@ -18,6 +19,7 @@ export const store = configureStore({
     search: searchReducer,
     vecStore: vecStoreReducer,
     generate: generateReducer,
+    config: configReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

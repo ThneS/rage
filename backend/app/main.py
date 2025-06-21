@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.v1.endpoints import documents, chunks, embeddings, search, generate
+from app.api.v1.endpoints import documents, chunks, embeddings, search, generate, config
 from app.core.database import engine, Base
 from fastapi.responses import JSONResponse
 from fastapi import Request, HTTPException
@@ -37,6 +37,15 @@ async def lifespan(app: FastAPI):
     # 初始化逻辑
     load_env()
     Base.metadata.create_all(bind=engine)
+
+    # 初始化默认配置
+    from app.services.config import ConfigService
+    from app.core.database import get_db
+    db = next(get_db())
+    config_service = ConfigService(db)
+    config_service.load_default_configs()
+    logger.info("默认配置初始化完成")
+
     logger.info("应用初始化完成")
     yield
     # 可选：关闭资源等清理逻辑
@@ -91,6 +100,12 @@ app.include_router(
     generate.router,
     prefix=f"{settings.API_V1_STR}/generate",
     tags=["generate"]
+)
+
+app.include_router(
+    config.router,
+    prefix=f"{settings.API_V1_STR}/config",
+    tags=["config"]
 )
 
 @app.get("/")
