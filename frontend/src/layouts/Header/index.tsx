@@ -1,6 +1,5 @@
 import React from 'react';
-import { Layout, Steps, Button, Space } from 'antd';
-import { SaveOutlined, /* PlayCircleOutlined ,*/ ImportOutlined, ExportOutlined } from '@ant-design/icons';
+import { Layout, Steps} from 'antd';
 import styled from '@emotion/styled';
 import { useLocation } from 'react-router-dom';
 
@@ -41,14 +40,14 @@ const Header: React.FC = () => {
       <Steps
         current={currentStep}
         items={steps.map(step => ({ title: step.title }))}
-        style={{ width: '60%' }}
+        style={{ width: '60%', marginLeft: 0 }}
       />
-      <Space>
+      {/* <Space>
         <Button icon={<SaveOutlined />}>保存配置</Button>
-        {/* <Button icon={<PlayCircleOutlined />} type="primary">运行测试</Button> */}
+        <Button icon={<PlayCircleOutlined />} type="primary">运行测试</Button>
         <Button icon={<ImportOutlined />}>导入配置</Button>
         <Button icon={<ExportOutlined />}>导出配置</Button>
-      </Space>
+      </Space> */}
     </StyledHeader>
   );
 };

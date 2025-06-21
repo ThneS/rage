@@ -31,7 +31,7 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
   const [form] = Form.useForm();
   const { message } = App.useApp();
   const config = useAppSelector(state => state.document.config);
-  const loading = useAppSelector(state => state.document.loading);
+  const { loading, error } = useAppSelector(state => state.document);
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [initialValues, setInitialValues] = useState<Record<string, any>>({});
   const dispatch = useAppDispatch();
@@ -76,7 +76,7 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
       title={
         <Space>
           {config?.icon && <i className={`fas fa-${config.icon}`} />}
-          <span>处理配置</span>
+          <span>文档处理</span>
           {config?.name && <Text type="secondary">({config.name})</Text>}
         </Space>
       }
@@ -117,7 +117,7 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
               config={config}
               formValues={formValues}
               processing={processing}
-              error={undefined}
+              error={error}
               selectedDocument={selectedDocument}
               onValuesChange={handleValuesChange}
             />

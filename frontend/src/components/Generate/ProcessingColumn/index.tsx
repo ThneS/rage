@@ -57,7 +57,7 @@ const ProcessingColumn = ({ documentId, config, onFormValuesChange }: Processing
   };
 
   return (
-    <div style={{ marginTop: '20px' }}>
+    <div>
       <Card title="处理流程" size="small">
         <Space direction="vertical" style={{ width: '100%' }} size="middle">
           {/* 输入文本框 */}

@@ -82,7 +82,7 @@ const ChunkConfig: React.FC<ChunkConfigProps> = ({
       title={
         <Space>
           {config?.icon && <i className={`fas fa-${config.icon}`} />}
-          <span>分块配置</span>
+          <span>分块处理</span>
           {config?.name && <Text type="secondary">({config.name})</Text>}
         </Space>
       }

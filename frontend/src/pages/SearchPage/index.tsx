@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Modal } from 'antd';
+import { Row, Col, Modal, Spin, message, Card, Empty } from 'antd';
 import { useAppDispatch, useAppSelector } from '@/store';
+import { fetchDocuments, selectSelectedDocument, selectDocument } from '@/store/slices/documentSlice';
 import {
   fetchSearchConfigs,
   fetchVecStoreConfigForSearch,
@@ -14,6 +15,7 @@ import type { Document } from '@/types/document';
 
 const SearchPage: React.FC = () => {
   const dispatch = useAppDispatch();
+  const { loading: docsLoading, error: docsError } = useAppSelector(state => state.document);
   const {
     vecStoreConfig,
     preConfig,
@@ -24,15 +26,27 @@ const SearchPage: React.FC = () => {
     loading,
   } = useAppSelector((state) => state.search);
 
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+  const selectedDocument = useAppSelector(selectSelectedDocument);
   const [currentStep, setCurrentStep] = useState(0);
   const [query, setQuery] = useState('');
   const [vecStoreFormValues, setVecStoreFormValues] = useState<Record<string, any>>({});
   const [preProcessFormValues, setPreProcessFormValues] = useState<Record<string, any>>({});
   const [postProcessFormValues, setPostProcessFormValues] = useState<Record<string, any>>({});
 
+  useEffect(() => {
+    dispatch(fetchDocuments());
+    // 确保页面加载时清除任何已选择的文档
+    dispatch(selectDocument(null));
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (docsError) {
+      message.error(docsError);
+    }
+  }, [docsError]);
+
   const handleSelectDocument = (doc: Document) => {
-    setSelectedDocument(doc);
+    dispatch(selectDocument(doc.id));
     dispatch(fetchSearchConfigs(doc.id));
     dispatch(fetchVecStoreConfigForSearch(doc.id));
     setCurrentStep(0);
@@ -72,34 +86,87 @@ const SearchPage: React.FC = () => {
   }, [parseResult]);
 
   return (
-    <Row gutter={16} style={{ height: '100%' }}>
-      <Col span={8}>
-        <DocumentList onSelectDocument={handleSelectDocument} selectedId={selectedDocument?.id} showUpload={false} />
-      </Col>
-      <Col span={16}>
-        <SearchProcessing
-            currentStep={currentStep}
-            selectedDocument={selectedDocument}
-            vecStoreConfig={vecStoreConfig}
-            vecStoreFormValues={vecStoreFormValues}
-            onVecStoreFormValuesChange={setVecStoreFormValues}
-            preConfig={preConfig}
-            postConfig={postConfig}
-            preProcessFormValues={preProcessFormValues}
-            onPreProcessFormValuesChange={setPreProcessFormValues}
-            postProcessFormValues={postProcessFormValues}
-            onPostProcessFormValuesChange={setPostProcessFormValues}
-            preProcessResult={preProcessResult}
-            postProcessResult={postProcessResult}
-            query={query}
-            onQueryChange={setQuery}
-            onPreProcess={handlePreProcess}
-            onPostProcess={handlePostProcess}
-            onParse={handleParse}
-            onStepChange={setCurrentStep}
-        />
-      </Col>
-    </Row>
+    <div style={{ height: '100vh', padding: '20px' }}>
+      <Spin spinning={docsLoading}>
+        <Row gutter={16} style={{ height: '100%' }}>
+          {/* 左侧：文档列表 */}
+          <Col span={12}>
+            <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              {/* 文档列表 */}
+              <div style={{ flex: '0 0 auto', marginBottom: '20px' }}>
+                <DocumentList
+                  onSelectDocument={handleSelectDocument}
+                  selectedId={selectedDocument?.id}
+                  showUpload={false}
+                />
+              </div>
+
+              {/* 搜索处理区域 */}
+              {selectedDocument ? (
+                <div style={{ flex: '1 1 auto' }}>
+                  <Card title="文档信息" size="small">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <div>
+                        <div style={{
+                          background: '#f5f5f5',
+                          padding: '10px',
+                          borderRadius: '4px',
+                          fontSize: '14px'
+                        }}>
+                          <div><strong>文件名：</strong>{selectedDocument.filename}</div>
+                          <div><strong>状态：</strong>{selectedDocument.status}</div>
+                          <div><strong>大小：</strong>{selectedDocument.file_size} bytes</div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <div style={{ fontSize: '12px', color: '#666' }}>
+                          选择文档后可在右侧配置搜索参数
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+              ) : (
+                <Card style={{ flex: '1 1 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Empty description="请先选择一个文档" />
+                </Card>
+              )}
+            </div>
+          </Col>
+
+          {/* 右侧：搜索处理配置 + 结果 */}
+          <Col span={12}>
+            {selectedDocument ? (
+              <SearchProcessing
+                currentStep={currentStep}
+                selectedDocument={selectedDocument}
+                vecStoreConfig={vecStoreConfig}
+                vecStoreFormValues={vecStoreFormValues}
+                onVecStoreFormValuesChange={setVecStoreFormValues}
+                preConfig={preConfig}
+                postConfig={postConfig}
+                preProcessFormValues={preProcessFormValues}
+                onPreProcessFormValuesChange={setPreProcessFormValues}
+                postProcessFormValues={postProcessFormValues}
+                onPostProcessFormValuesChange={setPostProcessFormValues}
+                preProcessResult={preProcessResult}
+                postProcessResult={postProcessResult}
+                query={query}
+                onQueryChange={setQuery}
+                onPreProcess={handlePreProcess}
+                onPostProcess={handlePostProcess}
+                onParse={handleParse}
+                onStepChange={setCurrentStep}
+              />
+            ) : (
+              <Card style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Empty description="请先选择一个文档" />
+              </Card>
+            )}
+          </Col>
+        </Row>
+      </Spin>
+    </div>
   );
 };
 

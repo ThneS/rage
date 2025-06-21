@@ -1,42 +1,104 @@
-import React, { useState } from 'react';
-import { Row, Col } from 'antd';
-import ChunkList from '@/components/Chunk/ChunkList';
+import React, { useEffect, useState } from 'react';
+import { Row, Col, Spin, message, Card, Empty } from 'antd';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { fetchDocuments, selectSelectedDocument, selectDocument } from '@/store/slices/documentSlice';
+import DocumentList from '@/components/Document/DocumentList';
 import ChunkConfig from '@/components/Chunk/ChunkConfig';
 import ChunkResult from '@/components/Chunk/ChunkConfig/ChunkResult';
-import { useAppSelector } from '@/store';
 import type { Document } from '@/types/document';
 
 const ChunkPage: React.FC = () => {
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
-  const [modalVisible, setModalVisible] = useState(false);
+  const dispatch = useAppDispatch();
+  const { loading: docsLoading, error: docsError } = useAppSelector(state => state.document);
   const { result: chunkResult, loading } = useAppSelector(state => state.chunk);
+  const selectedDocument = useAppSelector(selectSelectedDocument);
+  const [modalVisible, setModalVisible] = useState(false);
 
-  // 选中文档时，ChunkConfig 会自动请求配置并渲染
+  useEffect(() => {
+    dispatch(fetchDocuments());
+    // 确保页面加载时清除任何已选择的文档
+    dispatch(selectDocument(null));
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (docsError) {
+      message.error(docsError);
+    }
+  }, [docsError]);
+
   const handleSelectDocument = (document: Document) => {
-    setSelectedDocument(document);
+    dispatch(selectDocument(document.id));
   };
 
   // 查看处理结果
   const handleViewChunk = () => setModalVisible(true);
 
   return (
-    <div className="p-6 h-full bg-gray-50">
-      <Row gutter={16} className="h-full">
-        <Col span={12} className="h-full">
-          <ChunkList
-            onSelectDocument={handleSelectDocument}
-            selectedId={selectedDocument?.id}
-          />
-        </Col>
-        <Col span={12} className="h-full">
-          <ChunkConfig
-            selectedDocument={selectedDocument}
-            processing={loading}
-            ChunkResult={chunkResult}
-            onViewChunk={handleViewChunk}
-          />
-        </Col>
-      </Row>
+    <div style={{ height: '100vh', padding: '20px' }}>
+      <Spin spinning={docsLoading}>
+        <Row gutter={16} style={{ height: '100%' }}>
+          {/* 左侧：文档列表 */}
+          <Col span={12}>
+            <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              {/* 文档列表 */}
+              <div style={{ flex: '0 0 auto', marginBottom: '20px' }}>
+                <DocumentList
+                  onSelectDocument={handleSelectDocument}
+                  selectedId={selectedDocument?.id}
+                  showUpload={false}
+                />
+              </div>
+
+              {/* 分块处理区域 */}
+              {selectedDocument ? (
+                <div style={{ flex: '1 1 auto' }}>
+                  <Card title="文档信息" size="small">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <div>
+                        <div style={{
+                          background: '#f5f5f5',
+                          padding: '10px',
+                          borderRadius: '4px',
+                          fontSize: '14px'
+                        }}>
+                          <div><strong>文件名：</strong>{selectedDocument.filename}</div>
+                          <div><strong>状态：</strong>{selectedDocument.status}</div>
+                          <div><strong>大小：</strong>{selectedDocument.file_size} bytes</div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <div style={{ fontSize: '12px', color: '#666' }}>
+                          选择文档后可在右侧配置分块参数
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+              ) : (
+                <Card style={{ flex: '1 1 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Empty description="请先选择一个文档" />
+                </Card>
+              )}
+            </div>
+          </Col>
+
+          {/* 右侧：分块配置 + 结果 */}
+          <Col span={12}>
+            {selectedDocument ? (
+              <ChunkConfig
+                selectedDocument={selectedDocument}
+                processing={loading}
+                ChunkResult={chunkResult}
+                onViewChunk={handleViewChunk}
+              />
+            ) : (
+              <Card style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Empty description="请先选择一个文档" />
+              </Card>
+            )}
+          </Col>
+        </Row>
+      </Spin>
       <ChunkResult
         visible={modalVisible}
         onCancel={() => setModalVisible(false)}
