@@ -10,7 +10,7 @@ interface ConfigRenderProps {
   formValues: Record<string, any>;
   processing: boolean;
   error?: string | null;
-  onValuesChange?: (changed: any, all: Record<string, any>) => void;
+  onValuesChange: (changed: any, all: Record<string, any>) => void;
   initialValues?: Record<string, any>;
   selectedDocument?: any;
   children?: React.ReactNode;
@@ -98,9 +98,12 @@ const ConfigRender: React.FC<ConfigRenderProps> = ({
   formValues,
   processing,
   error,
+  onValuesChange,
   selectedDocument,
   children,
 }) => {
+  const [form] = Form.useForm();
+
   // 组装分组
   const formGroups = useMemo(() => {
     if (!config?.group_order) return [];
@@ -144,7 +147,12 @@ const ConfigRender: React.FC<ConfigRenderProps> = ({
   }, [config, formValues, processing, selectedDocument]);
 
   return (
-    <>
+    <Form
+        form={form}
+        layout="vertical"
+        initialValues={config?.default_config}
+        onValuesChange={onValuesChange}
+    >
       {error && (
         <Alert
           message="处理失败"
@@ -162,7 +170,7 @@ const ConfigRender: React.FC<ConfigRenderProps> = ({
       )}
       <Tabs tabPosition="top" style={{ height: '100%' }} items={formGroups} />
       {children}
-    </>
+    </Form>
   );
 };
 

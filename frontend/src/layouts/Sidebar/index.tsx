@@ -1,14 +1,13 @@
 import React from 'react';
 import { Layout, Menu } from 'antd';
 import {
-  FileTextOutlined,
-  ScissorOutlined,
-  ApiOutlined,
   DatabaseOutlined,
   SearchOutlined,
   FilterOutlined,
   SettingOutlined,
-  // BarChartOutlined,
+  UploadOutlined,
+  MenuUnfoldOutlined,
+  ApartmentOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styled from '@emotion/styled';
@@ -22,19 +21,19 @@ const StyledSider = styled(Sider)`
 
 const menuItems = [
   {
-    key: '/document-loader',
-    icon: <FileTextOutlined />,
-    label: '文档加载',
+    key: '/document',
+    icon: <UploadOutlined />,
+    label: '文档上传',
   },
   {
     key: '/chunk',
-    icon: <ScissorOutlined />,
-    label: '文档分块',
+    icon: <MenuUnfoldOutlined />,
+    label: '分块处理',
   },
   {
     key: '/embedding',
-    icon: <ApiOutlined />,
-    label: '文档嵌入',
+    icon: <ApartmentOutlined />,
+    label: '向量化',
   },
   {
     key: '/vec-store',

@@ -1,12 +1,24 @@
 import { configureStore } from '@reduxjs/toolkit';
 import type { TypedUseSelectorHook } from 'react-redux';
 import { useDispatch, useSelector } from 'react-redux';
-import { rootReducer } from './types';
 import type { RootState, AppDispatch } from './types';
+import documentReducer from './slices/documentSlice';
+import chunkReducer from './slices/chunkSlice';
+import embeddingReducer from './slices/embeddingSlice';
+import searchReducer from './slices/searchSlice';
+import vecStoreReducer from './slices/vecStoreSlice';
+import generateReducer from './slices/generateSlice';
 
 // 创建 store
 export const store = configureStore({
-  reducer: rootReducer,
+  reducer: {
+    document: documentReducer,
+    chunk: chunkReducer,
+    embedding: embeddingReducer,
+    search: searchReducer,
+    vecStore: vecStoreReducer,
+    generate: generateReducer,
+  },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,

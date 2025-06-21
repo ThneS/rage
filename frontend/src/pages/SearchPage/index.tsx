@@ -1,48 +1,105 @@
-import React, { useState } from 'react';
-import { Row, Col } from 'antd';
-import SearchList from '@/components/Search/SearchList';
-import SearchConfig from '@/components/Search/SearchConfig';
-import SearchResult from '@/components/Search/SearchConfig/SearchResult';
-import { useAppSelector } from '@/store';
+import React, { useState, useEffect } from 'react';
+import { Row, Col, Modal } from 'antd';
+import { useAppDispatch, useAppSelector } from '@/store';
+import {
+  fetchSearchConfigs,
+  fetchVecStoreConfigForSearch,
+  runPreProcess,
+  runPostProcess,
+  runParse,
+} from '@/store/slices/searchSlice';
+import DocumentList from '@/components/Document/DocumentList';
+import SearchProcessing from '@/components/Search/SearchProcessing';
 import type { Document } from '@/types/document';
 
 const SearchPage: React.FC = () => {
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const { result: searchResult, loading } = useAppSelector(state => state.search);
+  const dispatch = useAppDispatch();
+  const {
+    vecStoreConfig,
+    preConfig,
+    postConfig,
+    preProcessResult,
+    postProcessResult,
+    parseResult,
+    loading,
+  } = useAppSelector((state) => state.search);
 
-  // 选中文档时，ChunkConfig 会自动请求配置并渲染
-  const handleSelectDocument = (document: Document) => {
-    setSelectedDocument(document);
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [query, setQuery] = useState('');
+  const [vecStoreFormValues, setVecStoreFormValues] = useState<Record<string, any>>({});
+  const [preProcessFormValues, setPreProcessFormValues] = useState<Record<string, any>>({});
+  const [postProcessFormValues, setPostProcessFormValues] = useState<Record<string, any>>({});
+
+  const handleSelectDocument = (doc: Document) => {
+    setSelectedDocument(doc);
+    dispatch(fetchSearchConfigs(doc.id));
+    dispatch(fetchVecStoreConfigForSearch(doc.id));
+    setCurrentStep(0);
+    setVecStoreFormValues(vecStoreConfig?.default_config || {});
+    setPreProcessFormValues(preConfig?.default_config || {});
+    setPostProcessFormValues(postConfig?.default_config || {});
   };
 
-  // 查看处理结果
-  const handleViewSearch = () => setModalVisible(true);
+  const handlePreProcess = () => {
+    if (selectedDocument) {
+      dispatch(runPreProcess(selectedDocument.id, query, vecStoreFormValues));
+      setCurrentStep(1);
+    }
+  };
+
+  const handlePostProcess = (content: string) => {
+    if (selectedDocument) {
+      dispatch(runPostProcess(selectedDocument.id, content, preProcessFormValues));
+      setCurrentStep(2);
+    }
+  };
+
+  const handleParse = (content: string) => {
+    if (selectedDocument) {
+      dispatch(runParse(selectedDocument.id, content));
+    }
+  };
+
+  useEffect(() => {
+    if (parseResult) {
+        Modal.success({
+            title: '解析结果',
+            content: <pre>{JSON.stringify(parseResult, null, 2)}</pre>,
+            width: '60%',
+        });
+    }
+  }, [parseResult]);
 
   return (
-    <div className="p-6 h-full bg-gray-50">
-      <Row gutter={16} className="h-full">
-        <Col span={12} className="h-full">
-          <SearchList
-            onSelectDocument={handleSelectDocument}
-            selectedId={selectedDocument?.id}
-          />
-        </Col>
-        <Col span={12} className="h-full">
-          <SearchConfig
+    <Row gutter={16} style={{ height: '100%' }}>
+      <Col span={8}>
+        <DocumentList onSelectDocument={handleSelectDocument} selectedId={selectedDocument?.id} />
+      </Col>
+      <Col span={16}>
+        <SearchProcessing
+            currentStep={currentStep}
             selectedDocument={selectedDocument}
-            processing={loading}
-            SearchResult={searchResult}
-            onViewSearch={handleViewSearch}
-          />
-        </Col>
-      </Row>
-      <SearchResult
-        visible={modalVisible}
-        onCancel={() => setModalVisible(false)}
-        SearchResult={searchResult}
-      />
-    </div>
+            vecStoreConfig={vecStoreConfig}
+            vecStoreFormValues={vecStoreFormValues}
+            onVecStoreFormValuesChange={setVecStoreFormValues}
+            preConfig={preConfig}
+            postConfig={postConfig}
+            preProcessFormValues={preProcessFormValues}
+            onPreProcessFormValuesChange={setPreProcessFormValues}
+            postProcessFormValues={postProcessFormValues}
+            onPostProcessFormValuesChange={setPostProcessFormValues}
+            preProcessResult={preProcessResult}
+            postProcessResult={postProcessResult}
+            query={query}
+            onQueryChange={setQuery}
+            onPreProcess={handlePreProcess}
+            onPostProcess={handlePostProcess}
+            onParse={handleParse}
+            onStepChange={setCurrentStep}
+        />
+      </Col>
+    </Row>
   );
 };
 

@@ -1,72 +1,135 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { chunkService } from '@/services/chunkService';
-import type { AppThunk, AppDispatch } from '@/store/types';
-import type { LangChainSearch } from '@/types/search';
-import type { ConfigParams } from '@/types/commonConfig';
-import {fetchDocuments} from '@/store/slices/documentSlice';
 import { searchService } from '@/services/searchService';
+import { vecStoreService } from '@/services/vecStoreService';
+import type { AppThunk, AppDispatch } from '@/store/types';
+import type { ConfigParams } from '@/types/commonConfig';
+
 export interface SearchState {
-  config: ConfigParams | null;
-  result: LangChainSearch[] | null;
+  vecStoreConfig: ConfigParams | null;
+  preConfig: ConfigParams | null;
+  postConfig: ConfigParams | null;
+  preProcessResult: string | null;
+  postProcessResult: string | null;
+  parseResult: any | null;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: SearchState = {
-  config: null,
-  result: null,
+  vecStoreConfig: null,
+  preConfig: null,
+  postConfig: null,
+  preProcessResult: null,
+  postProcessResult: null,
+  parseResult: null,
   loading: false,
-  error: null
+  error: null,
 };
 
 const searchSlice = createSlice({
   name: 'search',
   initialState,
   reducers: {
-    setConfig: (state, action: PayloadAction<ConfigParams | null>) => {
-      state.config = action.payload;
-      state.error = null;
-    },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
     },
-    setSearchResult: (state, action: PayloadAction<LangChainSearch[] | null>) => {
-      state.result = action.payload;
+    setVecStoreConfig: (state, action: PayloadAction<ConfigParams | null>) => {
+      state.vecStoreConfig = action.payload;
     },
+    setPreConfig: (state, action: PayloadAction<ConfigParams | null>) => {
+      state.preConfig = action.payload;
+    },
+    setPostConfig: (state, action: PayloadAction<ConfigParams | null>) => {
+      state.postConfig = action.payload;
+    },
+    setPreProcessResult: (state, action: PayloadAction<string | null>) => {
+        state.preProcessResult = action.payload;
+    },
+    setPostProcessResult: (state, action: PayloadAction<string | null>) => {
+        state.postProcessResult = action.payload;
+    },
+    setParseResult: (state, action: PayloadAction<any | null>) => {
+        state.parseResult = action.payload;
+    }
   },
 });
 
-export const { setConfig, setLoading, setError, setSearchResult } = searchSlice.actions;
+export const {
+    setLoading,
+    setError,
+    setVecStoreConfig,
+    setPreConfig,
+    setPostConfig,
+    setPreProcessResult,
+    setPostProcessResult,
+    setParseResult
+} = searchSlice.actions;
 
+export const fetchVecStoreConfigForSearch = (documentId: number): AppThunk => async (dispatch: AppDispatch) => {
+    try {
+        dispatch(setLoading(true));
+        const config = await vecStoreService.getVecStoreConfig(documentId);
+        dispatch(setVecStoreConfig(config));
+    } catch (error) {
+        dispatch(setError(error instanceof Error ? error.message : '获取配置失败'));
+    } finally {
+        dispatch(setLoading(false));
+    }
+}
 
-export const fetchSearchConfig = (documentId: number): AppThunk => async (dispatch: AppDispatch) => {
-  try {
-    dispatch(setLoading(true));
-    const config = await searchService.getSearchConfig(documentId);
-    dispatch(setConfig(config));
-  } catch (error) {
-    dispatch(setError(error instanceof Error ? error.message : '获取分块配置失败'));
-    dispatch(setConfig(null));
-  } finally {
-    dispatch(setLoading(false));
-  }
+export const fetchSearchConfigs = (documentId: number): AppThunk => async (dispatch: AppDispatch) => {
+    try {
+        dispatch(setLoading(true));
+        const [preConfig, postConfig] = await Promise.all([
+            searchService.getPreConfig(documentId),
+            searchService.getPostConfig(documentId)
+        ]);
+        dispatch(setPreConfig(preConfig));
+        dispatch(setPostConfig(postConfig));
+    } catch (error) {
+        dispatch(setError(error instanceof Error ? error.message : '获取配置失败'));
+    } finally {
+        dispatch(setLoading(false));
+    }
 };
 
-export const processSearch = (documentId: number, config: ConfigParams): AppThunk<Promise<void>> => async (dispatch: AppDispatch) => {
-  try {
-    dispatch(setLoading(true));
-    const result = await searchService.processSearch(documentId, config);
-    dispatch(setSearchResult(result));
-    dispatch(fetchDocuments());
-  } catch (error) {
-    dispatch(setError(error instanceof Error ? error.message : '处理文档失败'));
-    throw error;
-  } finally {
-    dispatch(setLoading(false));
-  }
+export const runPreProcess = (documentId: number, query: string, config: Record<string, any>): AppThunk => async (dispatch: AppDispatch) => {
+    try {
+        dispatch(setLoading(true));
+        const result = await searchService.preProcess(documentId, query, config);
+        dispatch(setPreProcessResult(result.content));
+    } catch (error) {
+        dispatch(setError(error instanceof Error ? error.message : '预处理失败'));
+    } finally {
+        dispatch(setLoading(false));
+    }
 };
+
+export const runPostProcess = (documentId: number, content: string, config: Record<string, any>): AppThunk => async (dispatch: AppDispatch) => {
+    try {
+        dispatch(setLoading(true));
+        const result = await searchService.postProcess(documentId, content, config);
+        dispatch(setPostProcessResult(result.content));
+    } catch (error) {
+        dispatch(setError(error instanceof Error ? error.message : '后处理失败'));
+    } finally {
+        dispatch(setLoading(false));
+    }
+}
+
+export const runParse = (documentId: number, content: string): AppThunk => async (dispatch: AppDispatch) => {
+    try {
+        dispatch(setLoading(true));
+        const result = await searchService.parse(documentId, content);
+        dispatch(setParseResult(result.data));
+    } catch (error) {
+        dispatch(setError(error instanceof Error ? error.message : '解析失败'));
+    } finally {
+        dispatch(setLoading(false));
+    }
+}
 
 export default searchSlice.reducer;

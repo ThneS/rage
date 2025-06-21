@@ -1,30 +1,20 @@
-import type { LangChainSearch } from '@/types/search';
+import { get, post } from '@/utils/request';
 import type { ConfigParams } from '@/types/commonConfig';
 import { API_SEARCH_URL } from '@/constants/api';
-import { get, post } from '@/utils/request';
-
-
-export class SearchService {
-  async getSearchConfig(documentId: number,): Promise<ConfigParams | null> {
-    try {
-      return get<ConfigParams>(`${API_SEARCH_URL}/${documentId}/search-config`);
-    } catch (error) {
-      console.error('获取文档列表失败:', error);
-      return null;
-    }
-  }
-
-  async processSearch(
-      documentId: number,
-      config: ConfigParams): Promise<LangChainSearch[]> {
-    try {
-      const response = await post<LangChainSearch[]>(`${API_SEARCH_URL}/${documentId}/parse`, config);
-      return response;
-    } catch (error) {
-      console.error("搜索失败:", error);
-      throw error;
-    }
-  }
-}
-
-export const searchService = new SearchService();
+export const searchService = {
+  getPreConfig: (documentId: number): Promise<ConfigParams> => {
+    return get(`${API_SEARCH_URL}/${documentId}/pre_config`);
+  },
+  getPostConfig: (documentId: number): Promise<ConfigParams> => {
+    return get(`${API_SEARCH_URL}/${documentId}/post_config`);
+  },
+  preProcess: (documentId: number, query: string, config: Record<string, any>): Promise<{ content: string }> => {
+    return post(`${API_SEARCH_URL}/${documentId}/pre`, { query, config });
+  },
+  postProcess: (documentId: number, content: string, config: Record<string, any>): Promise<{ content: string }> => {
+    return post(`${API_SEARCH_URL}/${documentId}/post`, { content, config });
+  },
+  parse: (documentId: number, content: string): Promise<{ data: any }> => {
+    return post(`${API_SEARCH_URL}/${documentId}/parse`, { content });
+  },
+};
