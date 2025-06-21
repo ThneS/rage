@@ -90,13 +90,19 @@ jobs:
 
       - name: Build and push Docker images
         run: |
-          # 构建并推送后端镜像
-          docker build -t ${{ env.BACKEND_IMAGE }}:${{ env.IMAGE_TAG }} ./backend
-          docker push ${{ env.BACKEND_IMAGE }}:${{ env.IMAGE_TAG }}
+          # 设置镜像标签
+          IMAGE_TAG=${{ github.sha }}
+          IMAGE_NAME_LOWER=${{ steps.meta.outputs.image_name }}
 
-          # 构建并推送前端镜像
-          docker build -t ${{ env.FRONTEND_IMAGE }}:${{ env.IMAGE_TAG }} ./frontend
-          docker push ${{ env.FRONTEND_IMAGE }}:${{ env.IMAGE_TAG }}
+          if [ "${{ matrix.component }}" = "backend" ]; then
+            # 构建并推送后端镜像
+            docker build -t ${{ env.REGISTRY }}/${IMAGE_NAME_LOWER}-backend:${IMAGE_TAG} ./backend
+            docker push ${{ env.REGISTRY }}/${IMAGE_NAME_LOWER}-backend:${IMAGE_TAG}
+          elif [ "${{ matrix.component }}" = "frontend" ]; then
+            # 构建并推送前端镜像
+            docker build -t ${{ env.REGISTRY }}/${IMAGE_NAME_LOWER}-frontend:${IMAGE_TAG} ./frontend
+            docker push ${{ env.REGISTRY }}/${IMAGE_NAME_LOWER}-frontend:${IMAGE_TAG}
+          fi
 
   # 部署
   deploy:
