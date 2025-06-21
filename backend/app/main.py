@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.v1.endpoints import documents, chunks, embeddings, search
+from app.api.v1.endpoints import documents, chunks, embeddings, search, generate
 from app.core.database import engine, Base
 from fastapi.responses import JSONResponse
 from fastapi import Request, HTTPException
@@ -85,6 +85,12 @@ app.include_router(
     search.router,
     prefix=f"{settings.API_V1_STR}/search",
     tags=["search"]
+)
+
+app.include_router(
+    generate.router,
+    prefix=f"{settings.API_V1_STR}/generate",
+    tags=["generate"]
 )
 
 @app.get("/")
