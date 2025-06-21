@@ -120,6 +120,7 @@ const LoadConfig: React.FC<LoadConfigProps> = ({
               error={error}
               selectedDocument={selectedDocument}
               onValuesChange={handleValuesChange}
+              form={form}
             />
           </div>
           <Form.Item className="mt-4 mb-0">

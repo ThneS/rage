@@ -152,6 +152,45 @@ const ConfigRender: React.FC<ConfigRenderProps> = ({
     return groups;
   }, [config, formValues, processing, selectedDocument]);
 
+  // 如果传入了 form，说明外部已经有 Form 组件，只渲染内容
+  if (form) {
+    const handleFormFinish = (values: Record<string, any>) => {
+      console.log('ConfigRender: 表单提交，values:', values);
+      if (onFinish) {
+        onFinish(values);
+      }
+    };
+
+    return (
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={config?.default_config}
+        onValuesChange={onValuesChange}
+        onFinish={handleFormFinish}
+      >
+        {error && (
+          <Alert
+            message="处理失败"
+            description={error}
+            type="error"
+            showIcon
+            className="mb-4"
+            closable
+          />
+        )}
+        {config?.description && (
+          <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+            <Text type="secondary">{config.description}</Text>
+          </div>
+        )}
+        <Tabs tabPosition="top" style={{ height: '100%' }} items={formGroups} />
+        {children}
+      </Form>
+    );
+  }
+
+  // 如果没有传入 form，创建内部的 Form 组件
   const formProps = {
     form: currentForm,
     layout: "vertical" as const,

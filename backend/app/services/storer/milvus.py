@@ -74,20 +74,26 @@ class MilvusStorer:
 
     def search(self, query: str) -> str:
         embd = np.random.rand(1024).tolist()
-        result = self.client.search(
-            collection_name=self.collection_name,
-            anns_field="vector",
-            data=[embd],
-            limit=1,
-            output_fields=["content"],
-            search_params={"metric_type": "IP"},
-        )
-        # import pdb;pdb.set_trace()
-        # [[]]
-        if result == [[]]:
-            return "not found"
-        else:
-            return result[0][0]["content"]
+        try:
+            result = self.client.search(
+                collection_name=self.collection_name,
+                anns_field="vector",
+                data=[embd],
+                limit=1,
+                output_fields=["content"],
+                search_params={"metric_type": "IP"},
+            )
+            # import pdb;pdb.set_trace()
+            # [[]]
+            if result == [[]]:
+                return "not found"
+            else:
+                return result[0][0]["content"]
+        except Exception as e:
+            if "collection not found" in str(e):
+                raise Exception(f"Collection '{self.collection_name}' not found. Please ensure the document has been processed for vector storage.")
+            else:
+                raise Exception(f"Search failed: {str(e)}")
 
     def query(self, query: str) -> str:
         result = self.client.query(

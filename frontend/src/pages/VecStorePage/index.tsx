@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Row, Col, Spin, message, Card, Empty, Input, Button, Typography } from 'antd';
+import { Row, Col, Spin, message, Card, Empty, Input, Button, Typography, Alert } from 'antd';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { fetchDocuments, selectSelectedDocument, selectDocument } from '@/store/slices/documentSlice';
 import { searchVecStore } from '@/store/slices/vecStoreSlice';
@@ -52,6 +52,9 @@ const VecStorePage: React.FC = () => {
   // 查看处理结果
   const handleViewVecStore = () => setModalVisible(true);
 
+  // 检查文档是否可以搜索
+  const canSearch = selectedDocument?.status === DocumentStatus.STORED;
+
   return (
     <div style={{ height: '100vh', padding: '20px' }}>
       <Spin spinning={docsLoading}>
@@ -72,6 +75,15 @@ const VecStorePage: React.FC = () => {
               {selectedDocument ? (
                 <div style={{ flex: '1 1 auto' }}>
                   <Card title="向量检索" size="small">
+                    {!canSearch && (
+                      <Alert
+                        message="文档尚未完成向量存储处理"
+                        description={`当前文档状态：${selectedDocument.status}。请先在右侧进行向量存储处理，完成后才能进行搜索。`}
+                        type="warning"
+                        showIcon
+                        style={{ marginBottom: '16px' }}
+                      />
+                    )}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                       <div>
                         <div style={{ marginBottom: '8px', fontWeight: 'bold' }}>输入</div>
@@ -80,6 +92,7 @@ const VecStorePage: React.FC = () => {
                           value={queryText}
                           onChange={(e) => setQueryText(e.target.value)}
                           placeholder="请输入检索内容"
+                          disabled={!canSearch}
                         />
                       </div>
                       <div>
@@ -102,7 +115,7 @@ const VecStorePage: React.FC = () => {
                         <Button
                           type="primary"
                           onClick={handleSearch}
-                          disabled={!queryText.trim()}
+                          disabled={!queryText.trim() || !canSearch}
                         >
                           检索
                         </Button>

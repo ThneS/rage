@@ -29,10 +29,13 @@ const GenerateColumn = ({ documentId, config, formValues, result, processing, se
   }, [config, form]);
 
   const handleGenerate = async (values: Record<string, any>) => {
+    console.log('GenerateColumn: 生成按钮被点击，values:', values);
+    console.log('GenerateColumn: documentId:', documentId);
     try {
       await dispatch(runGenerate(documentId, values));
       message.success('生成完成');
     } catch (error) {
+      console.error('GenerateColumn: 生成失败:', error);
       message.error('生成失败: ' + (error instanceof Error ? error.message : '未知错误'));
     }
   };

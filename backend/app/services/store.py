@@ -77,6 +77,23 @@ class StoreService:
 
     def do_search(self, document_id: int, query: str) -> str:
         document = self.db.query(Document).filter(Document.id == document_id).first()
+        if not document:
+            raise HTTPException(status_code=404, detail="文档不存在")
+
+        if not document.store_id:
+            raise HTTPException(status_code=400, detail="文档尚未进行向量存储处理，请先进行向量存储")
+
         store = self.db.query(Store).filter(Store.id == document.store_id).first()
+        if not store:
+            raise HTTPException(status_code=404, detail="存储记录不存在")
+
         storer = MilvusStorer(ConfigParams.model_validate(store.config), "doc_"+str(document.id))
-        return storer.search(query)
+
+        # 检查集合是否存在
+        try:
+            return storer.search(query)
+        except Exception as e:
+            if "collection not found" in str(e):
+                raise HTTPException(status_code=400, detail="文档的向量集合不存在，请先进行向量存储处理")
+            else:
+                raise HTTPException(status_code=500, detail=f"搜索失败: {str(e)}")
